@@ -78,6 +78,11 @@ class PluginArsurveysConfig extends Config {
         echo "</td></tr>\n";
 
         echo "<tr class='tab_bg_1'>";
+        echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td colspan=2>";
+        Dropdown::showYesNo("force_positive_notif",$config->fields["force_positive_notif"]);
+        echo "</td></tr>\n";
+
+        echo "<tr class='tab_bg_1'>";
         echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['comments']."&nbsp;:";
         echo "</td><td colspan=2 class='center'>";
         echo "<textarea cols='60' rows='5' name='comment' >".$config->fields['comment']."</textarea>";

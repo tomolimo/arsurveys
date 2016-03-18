@@ -181,6 +181,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
       $notif = new PluginArsurveysNotification ;
       if( !$notif->getFromDBByNotification( $data['notifications_id'] ) ){
          $notif->fields['threshold'] = null ;
+         $notif->fields['force_positive_notif'] = null ;
       }
       switch( $this->raiseevent ) {
          case 'bad_survey' :
@@ -193,12 +194,16 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
             break;
          case 'good_survey' :
             $threshold = ($notif->fields['threshold']!=null ? $notif->fields['threshold'] : $config->fields['good_threshold']);
+            $force_positive_notif=($notif->fields['force_positive_notif']!=null ? $notif->fields['force_positive_notif'] : $config->fields['force_positive_notif']);
             if( (in_array('satisfaction', $options['item']->updates) || 
                in_array('friendliness', $options['item']->updates) || 
-               in_array('responsetime', $options['item']->updates)) &&
+               in_array('responsetime', $options['item']->updates) ||
+               in_array('comment', $options['item']->updates)) &&
                ($options['item']->input['satisfaction'] >= $threshold) &&
                (!isset( $options['item']->input['friendliness'] ) || $options['item']->input['friendliness'] >= $threshold) &&
-               (!isset( $options['item']->input['responsetime'] ) || $options['item']->input['responsetime'] >= $threshold) ) {
+               (!isset( $options['item']->input['responsetime'] ) || $options['item']->input['responsetime'] >= $threshold) &&
+               ( $force_positive_notif || !empty($options['item']->input['comment']) )) {
+
                return true ;
             }
             break;

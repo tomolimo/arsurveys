@@ -74,6 +74,11 @@ class PluginArsurveysNotification extends CommonDBTM {
            $threshold = $this->fields['threshold'] ;
         }
         
+        $force_positive_notif = $config->fields['force_positive_notif'] ;
+        if( isset($this->fields['force_positive_notif'])) {
+           $force_positive_notif = $this->fields['force_positive_notif'] ;
+        }
+
 
         echo "<form action='".$target."' method='post'>";
         echo "<table class='tab_cadre_fixe'>";
@@ -85,6 +90,13 @@ class PluginArsurveysNotification extends CommonDBTM {
         echo "<input type='text' name='threshold' value='".$threshold."'>" ;
         echo "</td></tr>";
 
+        if(!$bad_survey){
+           // then show the setting to force positive notifications even if user's comment to satisfaction survey is empty
+           echo "<tr class='tab_bg_2'>";
+           echo "<td >".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td >";
+           Dropdown::showYesNo("force_positive_notif",$force_positive_notif);
+           echo "</td></tr>";
+        }
         if ($canedit) {
             echo "<tr class='tab_bg_1'>";
             echo "<td class='center' colspan='2'>";

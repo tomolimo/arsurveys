@@ -43,7 +43,8 @@ function plugin_arsurveys_install() {
 	         `id` INT(11) NOT NULL AUTO_INCREMENT,
 	         `bad_threshold` INT(11) NOT NULL ,
 	         `good_threshold` INT(11) NOT NULL ,
-	         `date_mod` TIMESTAMP NULL DEFAULT NULL,
+	         `force_positive_notif` TINYINT(1) NOT NULL DEFAULT '1' COMMENT 'to send positive notification even if user comment is empty',
+            `date_mod` TIMESTAMP NULL DEFAULT NULL,
 	         `comment` TEXT NULL,
 	         PRIMARY KEY (`id`)
          )
@@ -77,7 +78,7 @@ function plugin_arsurveys_install() {
             $DB->query( $query ) or die("Can't insert 'Ticket Survey Monitor' notification template in 'glpi_notificationtemplates' table") ;
             
             $notiftemplateid = $DB->insert_id() ;
-         
+            
             // insert default notififaction template translation
             $query = "INSERT INTO `glpi_notificationtemplatetranslations` 
                   (`notificationtemplates_id`, `language`, `subject`, `content_text`, `content_html`) 
@@ -141,30 +142,40 @@ function plugin_arsurveys_install() {
                      &lt;/table&gt;'
                   );";
 
-            $DB->queryOrDie($query, "Add notification template translation in 'glpi_notificationtemplatetranslations' table");
+            $DB->query( $query ) or die( "Add notification template translation in 'glpi_notificationtemplatetranslations' table");
 
             // add notifications one for negative survey results and one for positive survey results
             $query = "INSERT INTO `glpi_notifications` 
                      (`name`, `entities_id`, `itemtype`, `event`, `mode`, `notificationtemplates_id`, `comment`, `is_recursive`, `is_active`, `date_mod`) 
                      VALUES ('Negative Survey Results', 0, 'PluginArsurveysTicketSatisfaction', 'bad_survey', 'mail', $notiftemplateid, '', 1, 1, NOW());";
-            $DB->queryOrDie($query, "Add Negative Survey Result notification in 'glpi_notifications' table");
+            $DB->query( $query ) or die("Add Negative Survey Result notification in 'glpi_notifications' table");
 
             $notifid = $DB->insert_id() ;
             $query = "INSERT INTO `glpi_notificationtargets` (`items_id`, `type`, `notifications_id`) VALUES (10, 1, $notifid);";
-            $DB->queryOrDie($query, "Add Negative Survey Result notification target in 'glpi_notificationtargets' table");
+            $DB->query( $query ) or die("Add Negative Survey Result notification target in 'glpi_notificationtargets' table");
 
             $query = "INSERT INTO `glpi_notifications`
                      (`name`, `entities_id`, `itemtype`, `event`, `mode`, `notificationtemplates_id`, `comment`, `is_recursive`, `is_active`, `date_mod`)
                      VALUES ('Positive Survey Results', 0, 'PluginArsurveysTicketSatisfaction', 'good_survey', 'mail', $notiftemplateid, '', 1, 1, NOW());";
-            $DB->queryOrDie($query, "Add Positive Survey Result notification in 'glpi_notifications' table");
+            $DB->query( $query ) or die("Add Positive Survey Result notification in 'glpi_notifications' table");
 
             $notifid = $DB->insert_id() ;
             $query = "INSERT INTO `glpi_notificationtargets` (`items_id`, `type`, `notifications_id`) VALUES (10, 1, $notifid);";
-            $DB->queryOrDie($query, "Add Positive Survey Result notification target in 'glpi_notificationtargets' table");
+            $DB->query( $query ) or die("Add Positive Survey Result notification target in 'glpi_notificationtargets' table");
 
          }
       }
 
+   } else {
+      // table is already existing
+      // must test for missing fields
+      if( !FieldExists('glpi_plugin_arsurveys_configs', 'force_positive_notif')){
+         $query = "ALTER TABLE `glpi_plugin_arsurveys_configs`
+                  	ADD COLUMN `force_positive_notif` TINYINT(1) NOT NULL DEFAULT '1' COMMENT 'to force positive notification even if user comment is empty' 
+                     AFTER `good_threshold`;";
+         $DB->query( $query ) or die("Add 'force_positive_notif' field in 'glpi_plugin_arsurveys_configs' table");
+
+      }
    }
 
    if( !TableExists('glpi_plugin_arsurveys_notifications') ) {
@@ -172,7 +183,8 @@ function plugin_arsurveys_install() {
 	         `id` INT(11) NOT NULL AUTO_INCREMENT,
 	         `notifications_id` INT(11) NOT NULL,
 	         `threshold` INT(11) NULL DEFAULT NULL,
-	         PRIMARY KEY (`id`),
+	         `force_positive_notif` TINYINT(1) NULL DEFAULT NULL COMMENT 'to send positive notification even if user comment is empty',
+            PRIMARY KEY (`id`),
 	         UNIQUE INDEX `notifications_id` (`notifications_id`)
          )
          ENGINE=InnoDB
@@ -181,6 +193,16 @@ function plugin_arsurveys_install() {
          ";
       $DB->query( $query ) or die("Can't insert configuration in 'glpi_plugin_arsurveys_notifications' table") ;
 
+   } else {
+      // table is already existing
+      // must test for missing fields
+      if( !FieldExists('glpi_plugin_arsurveys_notifications', 'force_positive_notif')){
+         $query = "ALTER TABLE `glpi_plugin_arsurveys_notifications`
+	                  ADD COLUMN `force_positive_notif` TINYINT(1) NULL DEFAULT NULL COMMENT 'to send positive notification even if user comment is empty' 
+                     AFTER `threshold`;
+                  ";
+         $DB->query( $query ) or die("Add 'force_positive_notif' field in 'glpi_plugin_arsurveys_notifications' table");         
+      }
    }
 
    return true;

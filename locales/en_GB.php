@@ -41,6 +41,7 @@ $LANG['plugin_arsurveys']["ticketsatisfactiontype"] = "Ticket surveys";
 
 $LANG['plugin_arsurveys']['config']['bad_threshold'] = "Negative Threshold: if satisfaction survey result is less than or equal (<=) to this value a notification will be triggered as a 'negative survey result'";
 $LANG['plugin_arsurveys']['config']['good_threshold'] = "Positive Threshold: if satisfaction survey result is greater than or equal (=>) to this value a notification will be triggered as a 'positive survey result'";
+$LANG['plugin_arsurveys']['config']['force_positive_notif'] = "'Positive Survey Result' notifications are not sent when user's comments to satisfaction survey is empty. Send them anyway?";
 $LANG['plugin_arsurveys']['config']['comments'] = "Comments";
 $LANG['plugin_arsurveys']['config']['datemod'] = "Last update" ;
 $LANG['plugin_arsurveys']['config']['save'] = "Save" ;

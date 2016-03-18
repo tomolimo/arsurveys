@@ -46,7 +46,6 @@ class PluginArsurveysTicketSatisfaction extends CommonDropdown
    static function plugin_item_update_arsurveys($item) {
       // just push notifications
       $me = new PluginArsurveysTicketSatisfaction ;
-      //$me->fields['ticketsatisfaction'] = $item;
       NotificationEvent::raiseEvent('bad_survey', $me, array('item' => $item, 'ticketsatisfaction' => $item)) ;
       NotificationEvent::raiseEvent('good_survey', $me, array('item' => $item, 'ticketsatisfaction' => $item)) ;
 

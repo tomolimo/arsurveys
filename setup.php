@@ -64,7 +64,7 @@ function plugin_init_arsurveys() {
 function plugin_version_arsurveys() {
     global $LANG;
     return array('name'           => $LANG['plugin_arsurveys']["name"],
-                 'version'        => '1.2.1',
+                 'version'        => '1.3.0',
                  'author'         => 'Olivier Moron',
                  'minGlpiVersion' => '0.83');// For compatibility / no install in version < 0.83
 }
