@@ -85,7 +85,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
 
         $locTicket = $this->obj ;
 
-        $locTicketSatisfaction = $options['item']->fields['ticketsatisfaction'] ;
+        $locTicketSatisfaction = $options['ticketsatisfaction']; //$options['item']->fields['ticketsatisfaction'] ;
         $user = new User();
         $user->getFromDB(Session::getLoginUserID());
 
