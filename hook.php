@@ -88,21 +88,29 @@ function plugin_arsurveys_install() {
                      'Ticket ###ticketsatisfaction.ticket## - ##ticketsatisfaction.action##', 
                      '##lang.ticketsatisfaction.action##: ##ticketsatisfaction.action##
 
-                     ##lang.ticketsatisfaction.user##: ##ticketsatisfaction.user##
+##lang.ticketsatisfaction.user##: ##ticketsatisfaction.user##
 
-                     ##lang.ticketsatisfaction.ticket##: ##ticketsatisfaction.ticket##
+##lang.ticketsatisfaction.ticketentity##: ##ticketsatisfaction.ticketentity##
 
-                     ##lang.ticketsatisfaction.ticketname##: ##ticketsatisfaction.ticketname##
+##lang.ticketsatisfaction.ticket##: ##ticketsatisfaction.ticket##
 
-                     ##lang.ticketsatisfaction.url##: ##ticketsatisfaction.url##
+##lang.ticketsatisfaction.requesters##: ##ticketsatisfaction.requesters##
 
-                     ##lang.ticketsatisfaction.date_begin##: ##ticketsatisfaction.date_begin##
+##lang.ticketsatisfaction.ticketname##: ##ticketsatisfaction.ticketname##
 
-                     ##lang.ticketsatisfaction.date_answer##: ##ticketsatisfaction.date_answer##
+##lang.ticketsatisfaction.url##: ##ticketsatisfaction.url##
 
-                     ##lang.ticketsatisfaction.satisfaction##: ##ticketsatisfaction.satisfaction##
+##lang.ticketsatisfaction.date_begin##: ##ticketsatisfaction.date_begin##
 
-                     ##lang.ticketsatisfaction.comment##: ##ticketsatisfaction.comment##',
+##lang.ticketsatisfaction.date_answer##: ##ticketsatisfaction.date_answer##
+
+##lang.ticketsatisfaction.satisfaction##: ##ticketsatisfaction.satisfaction##
+
+##lang.ticketsatisfaction.comment##: ##ticketsatisfaction.comment##
+
+##lang.ticketsatisfaction.assigntousers##: ##ticketsatisfaction.assigntousers##
+
+##lang.ticketsatisfaction.assigntogroups##: ##ticketsatisfaction.assigntogroups##',
                      '&lt;table&gt;
                      &lt;tbody&gt;
                      &lt;tr&gt;&lt;th colspan=\"2\"&gt;##lang.ticketsatisfaction.action##: ##ticketsatisfaction.action##&lt;/th&gt;&lt;/tr&gt;
@@ -113,6 +121,14 @@ function plugin_arsurveys_install() {
                      &lt;tr&gt;
                      &lt;td&gt;##lang.ticketsatisfaction.ticket##&lt;/td&gt;
                      &lt;td&gt;##ticketsatisfaction.ticket##&lt;/td&gt;
+                     &lt;/tr&gt;
+                     &lt;tr&gt;
+                     &lt;td&gt;##lang.ticketsatisfaction.ticketentity##&lt;/td&gt;
+                     &lt;td&gt;##ticketsatisfaction.ticketentity##&lt;/td&gt;
+                     &lt;/tr&gt;
+                     &lt;tr&gt;
+                     &lt;td&gt;##lang.ticketsatisfaction.requesters##&lt;/td&gt;
+                     &lt;td&gt;##ticketsatisfaction.requesters##&lt;/td&gt;
                      &lt;/tr&gt;
                      &lt;tr&gt;
                      &lt;td&gt;##lang.ticketsatisfaction.ticketname##&lt;/td&gt;
@@ -137,6 +153,14 @@ function plugin_arsurveys_install() {
                      &lt;tr&gt;
                      &lt;td&gt;##lang.ticketsatisfaction.comment##&lt;/td&gt;
                      &lt;td&gt;##ticketsatisfaction.comment##&lt;/td&gt;
+                     &lt;/tr&gt;
+                     &lt;tr&gt;
+                     &lt;td&gt;##lang.ticketsatisfaction.assigntousers##&lt;/td&gt;
+                     &lt;td&gt;##ticketsatisfaction.assigntousers##&lt;/td&gt;
+                     &lt;/tr&gt;
+                     &lt;tr&gt;
+                     &lt;td&gt;##lang.ticketsatisfaction.assigntogroups##&lt;/td&gt;
+                     &lt;td&gt;##ticketsatisfaction.assigntogroups##&lt;/td&gt;
                      &lt;/tr&gt;
                      &lt;/tbody&gt;
                      &lt;/table&gt;'

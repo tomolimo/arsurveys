@@ -42,7 +42,8 @@ function plugin_init_arsurveys() {
    
    Plugin::registerClass('PluginArsurveysTicketSatisfaction', array ('notificationtemplates_types'  => true));
 
-   if (Config::canUpdate()) {
+   $conf=new Config ;
+   if ($conf->canUpdate()) {
       Plugin::registerClass('PluginArsurveysConfig', array('addtabon' => 'Config'));
       $PLUGIN_HOOKS['config_page']['arsurveys'] = 'front/config.form.php';
    }
@@ -64,7 +65,7 @@ function plugin_init_arsurveys() {
 function plugin_version_arsurveys() {
     global $LANG;
     return array('name'           => $LANG['plugin_arsurveys']["name"],
-                 'version'        => '1.3.0',
+                 'version'        => '1.4.0',
                  'author'         => 'Olivier Moron',
                  'minGlpiVersion' => '0.83');// For compatibility / no install in version < 0.83
 }

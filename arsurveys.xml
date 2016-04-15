@@ -9,7 +9,7 @@
          <en><![CDATA[This plugin can be used to send notifications when satisfaction survey result is negative or positive]]></en>
       </short>
       <long>
-         <en><![CDATA[This plugin can used to inform technicians, managers of technicians or whoever about ticket resolution satisfaction. It has two thresholds: one for negative survey notification trigger, and one for positive survey notification trigger. These two thresholds have default values (can be changed in plugin configuration, and ARSurvey Notifications inherit from these default values), that can be also changed on a per Notification basis. The plugin provides a Notification Template with a default translation. It also provides two default Notifications (one for Negative Satisfaction Results, and one for Positive Satisfaction Results), and these are activated by default, and defined target for those are the 'managers of the group assigned to ticket'.]]></en>
+         <en><![CDATA[This plugin can be used to inform technicians, managers of technicians or whoever about ticket resolution satisfaction. It has two thresholds: one for negative survey notification trigger, and one for positive survey notification trigger. These two thresholds have default values (can be changed in plugin configuration, and ARSurvey Notifications inherit from these default values), that can be also changed on a per Notification basis. The plugin provides a Notification Template with a default translation. It also provides two default Notifications (one for Negative Satisfaction Results, and one for Positive Satisfaction Results), and these are activated by default, and defined target for those are the 'managers of the group assigned to ticket'.]]></en>
       </long>
    </description>
    <homepage>https://github.com/tomolimo/arsurveys</homepage>
@@ -21,24 +21,24 @@
    </authors>
    <versions>
    <version>
-          <num>1.3.0</num>
+          <num>1.4.0</num>
           <compatibility>0.83</compatibility>
       </version>
    <version>
-          <num>1.3.0</num>
+          <num>1.4.0</num>
           <compatibility>0.84</compatibility>
       </version>
    <version>
-          <num>1.3.0</num>
+          <num>1.4.0</num>
           <compatibility>0.85</compatibility>
       </version>
      <version>
-       <num>1.3.0</num>
+       <num>1.4.0</num>
        <compatibility>0.90</compatibility>
      </version>
      <version>
-       <num>1.3.0</num>
-       <compatibility>0.91</compatibility>
+       <num>1.4.0</num>
+       <compatibility>9.1</compatibility>
      </version>
    </versions>
    <langs>
