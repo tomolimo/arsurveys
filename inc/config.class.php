@@ -37,88 +37,89 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
 class PluginArsurveysConfig extends Config {
 
-    static private $_instance = NULL;
+   static private $_instance = NULL;
 
-    function getName($with_comment=0) {
-        global $LANG;
+   function getName($with_comment=0) {
+      global $LANG;
 
-        return $LANG['plugin_arsurveys']["name"];  
-    }
+      return $LANG['plugin_arsurveys']["name"];
+   }
 
     /**
      * Singleton for the unique config record
+     * @return object
      */
-    static function getInstance() {
+   static function getInstance() {
 
-        if (!isset(self::$_instance)) {
-            self::$_instance = new self();
-            if (!self::$_instance->getFromDB(1)) {
-                self::$_instance->getEmpty();
-            }
-        }
-        return self::$_instance;
-    }
-
-
-    static function showConfigForm($item) {
-        global $LANG, $DB;
-
-        $config = self::getInstance();
-
-        $config->showFormHeader();
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['bad_threshold']."&nbsp;:</td><td colspan=2>";
-        echo "<input type='text' name='bad_threshold' value='".$config->fields['bad_threshold']."'>" ;
-        echo "</td></tr>\n";
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['good_threshold']."&nbsp;:</td><td colspan=2>";
-        echo "<input type='text' name='good_threshold' value='".$config->fields['good_threshold']."'>" ;
-        echo "</td></tr>\n";
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td colspan=2>";
-        Dropdown::showYesNo("force_positive_notif",$config->fields["force_positive_notif"]);
-        echo "</td></tr>\n";
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['comments']."&nbsp;:";
-        echo "</td><td colspan=2 class='center'>";
-        echo "<textarea cols='60' rows='5' name='comment' >".$config->fields['comment']."</textarea>";
-        echo "</td></tr>\n";
-
-        echo "<tr class='tab_bg_1'>";
-        echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['datemod']."&nbsp;: </td><td colspan=2>";
-        echo Html::convDateTime($config->fields["date_mod"]);
-        echo "</td></tr>\n";
-
-        $config->showFormButtons(array('candel'=>false));
-
-        return false;
-    }
+      if (!isset(self::$_instance)) {
+         self::$_instance = new self();
+         if (!self::$_instance->getFromDB(1)) {
+            self::$_instance->getEmpty();
+         }
+      }
+      return self::$_instance;
+   }
 
 
-    function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
-        global $LANG;
+   static function showConfigForm($item) {
+      global $LANG, $DB;
 
-        if ($item->getType()=='Config') {
-           return $LANG['plugin_arsurveys']["name"];
-        }
-        return '';
-    }
+      $config = self::getInstance();
+
+      $config->showFormHeader();
+
+      echo "<tr class='tab_bg_1'>";
+      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['bad_threshold']."&nbsp;:</td><td colspan=2>";
+      echo "<input type='text' name='bad_threshold' value='".$config->fields['bad_threshold']."'>";
+      echo "</td></tr>\n";
+
+      echo "<tr class='tab_bg_1'>";
+      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['good_threshold']."&nbsp;:</td><td colspan=2>";
+      echo "<input type='text' name='good_threshold' value='".$config->fields['good_threshold']."'>";
+      echo "</td></tr>\n";
+
+      echo "<tr class='tab_bg_1'>";
+      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td colspan=2>";
+      Dropdown::showYesNo("force_positive_notif", $config->fields["force_positive_notif"]);
+      echo "</td></tr>\n";
+
+      echo "<tr class='tab_bg_1'>";
+      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['comments']."&nbsp;:";
+      echo "</td><td colspan=2 class='center'>";
+      echo "<textarea cols='60' rows='5' name='comment' >".$config->fields['comment']."</textarea>";
+      echo "</td></tr>\n";
+
+      echo "<tr class='tab_bg_1'>";
+      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['datemod']."&nbsp;: </td><td colspan=2>";
+      echo Html::convDateTime($config->fields["date_mod"]);
+      echo "</td></tr>\n";
+
+      $config->showFormButtons(array('candel'=>false));
+
+      return false;
+   }
 
 
-    static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
+   function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
+      global $LANG;
 
-        if ($item->getType()=='Config') {
-            self::showConfigForm($item);
-        }
-        return true;
-    }
+      if ($item->getType()=='Config') {
+         return $LANG['plugin_arsurveys']["name"];
+      }
+      return '';
+   }
 
-    function prepareInputForUpdate($input){
-       return $input ;
-    }
+
+   static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
+
+      if ($item->getType()=='Config') {
+         self::showConfigForm($item);
+      }
+      return true;
+   }
+
+   function prepareInputForUpdate($input) {
+      return $input;
+   }
 
 }

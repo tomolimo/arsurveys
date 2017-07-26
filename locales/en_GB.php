@@ -43,28 +43,30 @@ $LANG['plugin_arsurveys']['config']['bad_threshold'] = "Negative Threshold: if s
 $LANG['plugin_arsurveys']['config']['good_threshold'] = "Positive Threshold: if satisfaction survey result is greater than or equal (=>) to this value a notification will be triggered as a 'positive survey result'";
 $LANG['plugin_arsurveys']['config']['force_positive_notif'] = "'Positive Survey Result' notifications are not sent when user's comments to satisfaction survey is empty. Send them anyway?";
 $LANG['plugin_arsurveys']['config']['comments'] = "Comments";
-$LANG['plugin_arsurveys']['config']['datemod'] = "Last update" ;
-$LANG['plugin_arsurveys']['config']['save'] = "Save" ;
+$LANG['plugin_arsurveys']['config']['datemod'] = "Last update";
+$LANG['plugin_arsurveys']['config']['save'] = "Save";
 
-$LANG['plugin_arsurveys']['bad_survey'] = 'Negative survey result' ;
-$LANG['plugin_arsurveys']['good_survey'] = 'Positive survey result' ;
+$LANG['plugin_arsurveys']['bad_survey'] = 'Negative survey result';
+$LANG['plugin_arsurveys']['good_survey'] = 'Positive survey result';
 
-$LANG['plugin_arsurveys']['targets']['tech_assigned_in_group'] = 'Technician in charge of this ticket within Group' ;
-$LANG['plugin_arsurveys']['targets']['manager_tech_assigned_in_group'] = 'Manager of Group for Technician in charge of this ticket within Group' ;
+$LANG['plugin_arsurveys']['targets']['tech_assigned_in_group'] = 'Technician in charge of this ticket within Group';
+$LANG['plugin_arsurveys']['targets']['manager_tech_assigned_in_group'] = 'Manager of Group for Technician in charge of this ticket within Group';
 
 
-$LANG['plugin_arsurveys']['ticketsatisfaction.action'] = 'Survey answer' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.user'] = 'Survey author' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.ticket'] = 'Ticket number' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.ticketentity'] = 'Ticket entity' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.ticketname'] = 'Ticket Title' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.requesters'] = 'Ticket Requesters' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.url'] = 'Satisfaction URL' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.date_begin'] = 'Start date' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.date_answer'] = 'Answer date' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.satisfaction'] = 'Quality satisfaction' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.comment'] = 'Survey comment' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.friendliness'] = 'Friendliness satisfaction' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.responsetime'] = 'Responsetime satisfaction' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.assigntousers'] = 'Assigned To Technicians' ;
-$LANG['plugin_arsurveys']['ticketsatisfaction.assigntogroups'] = 'Assigned To Groups' ;
+$LANG['plugin_arsurveys']['ticketsatisfaction.action'] = 'Survey answer';
+$LANG['plugin_arsurveys']['ticketsatisfaction.user'] = 'Survey author';
+$LANG['plugin_arsurveys']['ticketsatisfaction.ticket'] = 'Ticket number';
+$LANG['plugin_arsurveys']['ticketsatisfaction.ticketentity'] = 'Ticket entity';
+$LANG['plugin_arsurveys']['ticketsatisfaction.ticketname'] = 'Ticket Title';
+$LANG['plugin_arsurveys']['ticketsatisfaction.requesters'] = 'Ticket Requesters';
+$LANG['plugin_arsurveys']['ticketsatisfaction.url'] = 'Satisfaction URL';
+$LANG['plugin_arsurveys']['ticketsatisfaction.date_begin'] = 'Start date';
+$LANG['plugin_arsurveys']['ticketsatisfaction.date_answer'] = 'Answer date';
+$LANG['plugin_arsurveys']['ticketsatisfaction.satisfaction'] = 'Quality satisfaction';
+$LANG['plugin_arsurveys']['ticketsatisfaction.comment'] = 'Survey comment';
+$LANG['plugin_arsurveys']['ticketsatisfaction.friendliness'] = 'Friendliness satisfaction';
+$LANG['plugin_arsurveys']['ticketsatisfaction.responsetime'] = 'Responsetime satisfaction';
+$LANG['plugin_arsurveys']['ticketsatisfaction.assigntousers'] = 'Assigned To Technicians';
+$LANG['plugin_arsurveys']['ticketsatisfaction.assigntogroups'] = 'Assigned To Groups';
+$LANG['plugin_arsurveys']['ticketsatisfaction.ticketopendate'] = 'Ticket openning date';
+$LANG['plugin_arsurveys']['ticketsatisfaction.ticketsolvedate'] = 'Ticket resolution date';

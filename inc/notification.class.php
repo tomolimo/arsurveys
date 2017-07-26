@@ -43,76 +43,84 @@ if (!defined('GLPI_ROOT')) {
 class PluginArsurveysNotification extends CommonDBTM {
 
 
-    //profiles modification
-    function showForm($item, $options=array()) {
-        global $LANG;
+   /**
+    * profiles modification
+    * @param mixed $item    the item
+    * @param mixed $options array of options
+    * @return boolean
+    */
+   function showForm($item, $options=array()) {
+      global $LANG;
 
-        $target = $this->getFormURL();
-        if (isset($options['target'])) {
-            $target = $options['target'];
-        }
+      $target = $this->getFormURL();
+      if (isset($options['target'])) {
+         $target = $options['target'];
+      }
 
+      if ((TableExists('glpi_profilerights') && !Notification::canView()) || (!TableExists('glpi_profilerights') && !Session::haveRight("notification", "r"))) {
+         return false;
+      }
 
-        if ((TableExists('glpi_profilerights') && !Notification::canView()) || (!TableExists('glpi_profilerights') && !Session::haveRight("notification","r"))) {
-           return false;
-        }
+      $canedit = (TableExists('glpi_profilerights') && Notification::canUpdate()) || Session::haveRight("notification", "w");
 
-        $canedit = (TableExists('glpi_profilerights') && Notification::canUpdate()) || Session::haveRight("notification", "w");
+      $bad_survey = false;
+      if ($item->fields['event'] == 'bad_survey') {
+         $bad_survey = true;
+      }
 
-        $bad_survey = false ;
-        if( $item->fields['event'] == 'bad_survey' ) {
-           $bad_survey = true ;
-        }
+      $config = PluginArsurveysConfig::getInstance();
+      $threshold = ($bad_survey?$config->fields['bad_threshold']:$config->fields['good_threshold']); // by default
+      if (!$this->getFromDBByNotification($item->getID())) {
+         // must create it with default values
+         $this->add( array( 'notifications_id' => $item->getID()));
+      }
+      if (isset($this->fields['threshold'])) {
+         $threshold = $this->fields['threshold'];
+      }
 
-        $config = PluginArsurveysConfig::getInstance() ;
-        $threshold = ($bad_survey?$config->fields['bad_threshold']:$config->fields['good_threshold']); // by default
-        if(!$this->getFromDBByNotification($item->getID())){
-           // must create it with default values
-           $this->add( array( 'notifications_id' => $item->getID())) ;
-        }
-        if( isset($this->fields['threshold'])) {           
-           $threshold = $this->fields['threshold'] ;
-        }
-        
-        $force_positive_notif = $config->fields['force_positive_notif'] ;
-        if( isset($this->fields['force_positive_notif'])) {
-           $force_positive_notif = $this->fields['force_positive_notif'] ;
-        }
+      $force_positive_notif = $config->fields['force_positive_notif'];
+      if (isset($this->fields['force_positive_notif'])) {
+         $force_positive_notif = $this->fields['force_positive_notif'];
+      }
 
+      echo "<form action='".$target."' method='post'>";
+      echo "<table class='tab_cadre_fixe'>";
 
-        echo "<form action='".$target."' method='post'>";
-        echo "<table class='tab_cadre_fixe'>";
+      echo "<tr><th colspan='2'>".$LANG['plugin_arsurveys']["name"]." : ".$LANG['plugin_arsurveys']["notifconfig"] ."</th></tr>";
 
-        echo "<tr><th colspan='2'>".$LANG['plugin_arsurveys']["name"]." : ".$LANG['plugin_arsurveys']["notifconfig"] ."</th></tr>";
+      echo "<tr class='tab_bg_2'>";
+      echo "<td >".($bad_survey?$LANG['plugin_arsurveys']['config']['bad_threshold']:$LANG['plugin_arsurveys']['config']['good_threshold'])."&nbsp;:</td><td >";
+      echo "<input type='text' name='threshold' value='".$threshold."'>";
+      echo "</td></tr>";
 
-        echo "<tr class='tab_bg_2'>";
-        echo "<td >".($bad_survey?$LANG['plugin_arsurveys']['config']['bad_threshold']:$LANG['plugin_arsurveys']['config']['good_threshold'])."&nbsp;:</td><td >";
-        echo "<input type='text' name='threshold' value='".$threshold."'>" ;
-        echo "</td></tr>";
-
-        if(!$bad_survey){
-           // then show the setting to force positive notifications even if user's comment to satisfaction survey is empty
-           echo "<tr class='tab_bg_2'>";
-           echo "<td >".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td >";
-           Dropdown::showYesNo("force_positive_notif",$force_positive_notif);
-           echo "</td></tr>";
-        }
-        if ($canedit) {
-            echo "<tr class='tab_bg_1'>";
-            echo "<td class='center' colspan='2'>";
-            echo "<input type='hidden' name='id' value=".$this->getID().">";
-            echo "<input type='hidden' name='notifications_id' value=".$item->getID().">";
-            echo "<input type='submit' name='update_notification_config' value=\"".$LANG['plugin_arsurveys']['config']['save']."\"
+      if (!$bad_survey) {
+         // then show the setting to force positive notifications even if user's comment to satisfaction survey is empty
+         echo "<tr class='tab_bg_2'>";
+         echo "<td >".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td >";
+         Dropdown::showYesNo("force_positive_notif", $force_positive_notif);
+         echo "</td></tr>";
+      }
+      if ($canedit) {
+         echo "<tr class='tab_bg_1'>";
+         echo "<td class='center' colspan='2'>";
+         echo "<input type='hidden' name='id' value=".$this->getID().">";
+         echo "<input type='hidden' name='notifications_id' value=".$item->getID().">";
+         echo "<input type='submit' name='update_notification_config' value=\"".$LANG['plugin_arsurveys']['config']['save']."\"
                class='submit'>";
-            echo "</td></tr>";
-        }
-        echo "</table>";
-        Html::closeForm();
-    }
+         echo "</td></tr>";
+      }
+      echo "</table>";
+      Html::closeForm();
+   }
 
-    function getFromDBByNotification($notifications_id) {
+   /**
+    * Summary of getFromDBByNotification
+    * @param mixed $notifications_id ID of the notification
+    * @return boolean
+    */
+   function getFromDBByNotification($notifications_id) {
       global $DB;
-		
+
       $query = "SELECT * FROM `".$this->getTable()."`
                WHERE `notifications_id` = '" . $notifications_id . "' ";
       if ($result = $DB->query($query)) {
@@ -128,35 +136,49 @@ class PluginArsurveysNotification extends CommonDBTM {
       }
       return false;
    }
-    
-  
-    function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
-        global $LANG;
 
-        if ($item->getType()=='Notification' && $item->fields['itemtype'] == "PluginArsurveysTicketSatisfaction" && $item->getID() > 0) {
-          
-           return $LANG['plugin_arsurveys']["name"];
-        }
-        return '';
-    }
+   /**
+    * Summary of getTabNameForItem
+    * @param CommonGLPI $item         the item
+    * @param mixed      $withtemplate indicate that's use template
+    * @return array|string|translated
+    */
+   function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
+      global $LANG;
 
+      if ($item->getType()=='Notification' && $item->fields['itemtype'] == "PluginArsurveysTicketSatisfaction" && $item->getID() > 0) {
 
-    static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
-        
-        if ($item->getType()=='Notification' && $item->fields['itemtype'] == "PluginArsurveysTicketSatisfaction" && $item->getID() > 0) {
-            $notif = new self();
-            $notif->showForm($item);
-        }
-        return true;
-    }
+         return $LANG['plugin_arsurveys']["name"];
+      }
+      return '';
+   }
 
+   /**
+    * Summary of displayTabContentForItem
+    * @param CommonGLPI $item         the item
+    * @param mixed      $tabnum       num of tab
+    * @param mixed      $withtemplate incate if it(s withtemplate
+    * @return boolean
+    */
+   static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
 
-    static function plugin_item_purge_arsurveys($item) {
-       // just delete the record linked to current TicketValidation item
-       $me = new self();
-       $me->deleteByCriteria(array('notifications_id' => $item->getID()));
-    }
+      if ($item->getType()=='Notification' && $item->fields['itemtype'] == "PluginArsurveysTicketSatisfaction" && $item->getID() > 0) {
+         $notif = new self();
+         $notif->showForm($item);
+      }
+      return true;
+   }
+
+   /**
+    * Summary of plugin_item_purge_arsurveys
+    * @param mixed $item the item
+    * @return false
+    */
+   static function plugin_item_purge_arsurveys($item) {
+      // just delete the record linked to current TicketValidation item
+      $me = new self();
+      $me->deleteByCriteria(array('notifications_id' => $item->getID()));
+   }
 
 }
 
-?>

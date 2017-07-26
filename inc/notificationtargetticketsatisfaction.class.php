@@ -64,11 +64,20 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
                       'ticketsatisfaction.friendliness'    => 'Friendliness satisfaction',
                       'ticketsatisfaction.responsetime'    => 'Responsetime satisfaction',
                       'ticketsatisfaction.assigntousers'   => 'Assigned To Technicians',
-                      'ticketsatisfaction.assigntogroups'  => 'Assigned To Groups'
+                      'ticketsatisfaction.assigntogroups'  => 'Assigned To Groups',
+                      'ticketsatisfaction.ticketopendate'  => 'Ticket openning date',
+                      'ticketsatisfaction.ticketsolvedate' => 'Ticket resolution date'
                       );
 
+   /**
+    * Summary of __construct
+    * @param mixed $entity 
+    * @param mixed $event 
+    * @param mixed $object 
+    * @param mixed $options 
+    */
    function __construct($entity='', $event='', $object=null, $options=array()){
-   
+
       parent::__construct($entity, $event, null, $options); // passes null to prevent $this->obj and $this->target_object to be assigned with wrong values
 
       // defines static variables
@@ -97,17 +106,23 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
       }
    }
 
-    function getEvents() {
+   /**
+    * Summary of getEvents
+    * @return array
+    */
+   function getEvents() {
         global $LANG ;
-        return array('bad_survey' => $LANG['plugin_arsurveys']['bad_survey'], 
+        return array('bad_survey' => $LANG['plugin_arsurveys']['bad_survey'],
                      'good_survey' => $LANG['plugin_arsurveys']['good_survey']);
-    }
+   }
 
     /**
-     * Get all data needed for template processing
-     **/
+    * Get all data needed for template processing
+     * @param mixed $event 
+     * @param mixed $options 
+     */
     function getDatasForTemplate($event, $options=array()) {
-        global $CFG_GLPI;
+        global $CFG_GLPI, $LANG;
 
         $events = $this->getAllEvents();
 
@@ -119,22 +134,29 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
         $user = new User();
         $user->getFromDB(Session::getLoginUserID());
 
-        $this->datas['##ticketsatisfaction.user##'] = $user->getName( ) ; //$this->getUserFullName( Session::getLoginUserID() );
+        $this->datas['##ticketsatisfaction.user##'] = $user->getName( ) ;
         $this->datas['##ticketsatisfaction.ticket##'] = $locTicket->getID() ;
         $this->datas['##ticketsatisfaction.ticketname##'] = $locTicket->fields['name'];
+        $this->datas['##ticketsatisfaction.ticketopendate##'] = $locTicket->fields['date'];
+        $this->datas['##ticketsatisfaction.ticketsolvedate##'] = $locTicket->fields['solvedate'];
+
         $this->datas['##ticketsatisfaction.url##'] = urldecode($CFG_GLPI["url_base"]."/index.php?redirect=ticket_".
                                        $locTicket->getID().'_Ticket$3');
         $this->datas['##ticketsatisfaction.date_begin##'] = $locTicketSatisfaction->fields['date_begin'];
         $this->datas['##ticketsatisfaction.date_answer##'] = $locTicketSatisfaction->fields['date_answered'];
         $this->datas['##ticketsatisfaction.satisfaction##'] = $locTicketSatisfaction->fields['satisfaction'];
         $this->datas['##ticketsatisfaction.comment##'] = $locTicketSatisfaction->fields['comment'];
-        if(isset($options['item']->fields['friendliness'])) {
-           $this->datas['##ticketsatisfaction.friendliness##'] = $locTicketSatisfaction->fields['friendliness'];
+
+        // if this survey criterion is existing in $options
+        if(isset($options['ticketsatisfaction']->input['friendliness'])) {
+            $this->datas['##ticketsatisfaction.friendliness##'] = $options['ticketsatisfaction']->input['friendliness'];
         }
-        if( isset($options['item']->fields['responsetime'])) {
-           $this->datas['##ticketsatisfaction.responsetime##'] = $locTicketSatisfaction->fields['responsetime'];
+
+        // if this survey criterion is existing in $options
+        if(isset($options['ticketsatisfaction']->input['responsetime'])) {
+            $this->datas['##ticketsatisfaction.responsetime##'] = $options['ticketsatisfaction']->input['responsetime'];
         }
-        
+
         $this->datas["##ticketsatisfaction.assigntousers##"] = '';
         if ($locTicket->countUsers(self::$ASSIGN)) {
            $users = array();
@@ -170,7 +192,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
               $uid = $tmpusr['users_id'];
               $user_tmp = new User();
               if ($uid && $user_tmp->getFromDB($uid)) {
-                 $users[] = $user_tmp->getName();                 
+                 $users[] = $user_tmp->getName();
               } else {
                  // Anonymous users only in xxx.authors, not in authors
                  $users[] = $tmpusr['alternative_email'];
@@ -179,20 +201,32 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
            $this->datas["##ticketsatisfaction.requesters##"] = implode(', ',$users);
         }
 
-
-        $this->getTags();
+         $this->getTags();
         foreach ($this->tag_descriptions[NotificationTarget::TAG_LANGUAGE] as $tag => $values) {
             if (!isset($this->datas[$tag])) {
                 $this->datas[$tag] = $values['label'];
             }
         }
+        // gestion traduction des champs supplémentaires
+        foreach($this->tags as $tag => $value){
+            if (!isset($this->datas["##lang.".$tag."##"])) {
+                if(isset($LANG['plugin_arsurveys'][$tag])){
+                    $this->datas["##lang.".$tag."##"] = $LANG['plugin_arsurveys'][$tag];
+                }else{
+                    $this->datas["##lang.".$tag."##"] = $value;
+                }
+            }
+        }
+
     }
 
-
+    /**
+     * Summary of getTags
+     */
     function getTags() {
         global $LANG;
         foreach ($this->tags as $tag => $label) {
-           if( ($tag != 'ticketsatisfaction.friendliness' && $tag != 'ticketsatisfaction.responsetime') || 
+           if( ($tag != 'ticketsatisfaction.friendliness' && $tag != 'ticketsatisfaction.responsetime') ||
               (FieldExists( 'glpi_ticketsatisfactions', 'friendliness' ) && FieldExists('glpi_ticketsatisfactions', 'responsetime' )) ) {
                $this->addTagToList(array('tag'   => $tag,
                                       'label' => $LANG['plugin_arsurveys']["$tag"],
@@ -206,16 +240,18 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
 
    /**
    * Summary of checkNotificationTarget
-   * @param mixed $data 
-   * @param mixed $options 
+   * @param mixed $data
+   * @param mixed $options
    */
    function checkNotificationTarget( $data, &$options ) {
-      // get ticket      
+      // get ticket
       $tick = $this->obj ;
       $members = array( ) ;
       $ids = array() ;
       $ret = false ; // no users
-      $options['arsurvey']['users_id']=array(); // empty array
+      if(!isset($options['arsurvey']['users_id'])){
+        $options['arsurvey']['users_id']=array(); // empty array
+      }
 
       $grp = new Group ;
       $grp->getFromDB( $data['items_id'] ) ;
@@ -224,11 +260,11 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
       // search for all ticket tech belonging to this group
       // and store them into options
       // will be used later
-      
+
       foreach( $tick->getUsers( self::$ASSIGN ) as $tech ) {
          if( in_array( $tech['users_id'], $ids )  ) {
             // then send notification
-            $options['arsurvey']['users_id'][]=$tech['users_id'];
+            $options['arsurvey']['users_id'][] = $tech['users_id'];
             $ret = true; // at least one user
          }
 
@@ -238,8 +274,8 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
 
    /**
     * Summary of checkNotificationThreshold
-    * @param mixed $data 
-    * @param mixed $options 
+    * @param mixed $data
+    * @param mixed $options
     * @return bool
     */
    function checkNotificationThreshold( $data, $options ) {
@@ -264,8 +300,8 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
          case 'good_survey' :
             $threshold = ($notif->fields['threshold']!=null ? $notif->fields['threshold'] : $config->fields['good_threshold']);
             $force_positive_notif=($notif->fields['force_positive_notif']!=null ? $notif->fields['force_positive_notif'] : $config->fields['force_positive_notif']);
-            if( (in_array('satisfaction', $options['item']->updates) || 
-               in_array('friendliness', $options['item']->updates) || 
+            if( (in_array('satisfaction', $options['item']->updates) ||
+               in_array('friendliness', $options['item']->updates) ||
                in_array('responsetime', $options['item']->updates) ||
                in_array('comment', $options['item']->updates)) &&
                ($options['item']->input['satisfaction'] >= $threshold) &&
@@ -282,29 +318,30 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
 
    /**
     * Summary of getAddressesByTarget
-    * @param mixed $data 
-    * @param mixed $options 
+    * @param mixed $data
+    * @param mixed $options
     */
-   function getAddressesByTarget($data, $options = array()) {     
-      $exec = true ;
+   function getAddressesByTarget($data, $options = array()) {
+      //exec = true ;
+      $check = $this->checkNotificationTarget( $data, $options ) ;
       if( ($data['type'] == self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP
-            || $data['type'] == self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP) 
-          && !$this->checkNotificationTarget( $data, $options ) ) {
-         $exec = false ;
-      }
-      if( $exec && $this->checkNotificationThreshold( $data, $options) ) {
-         parent::getAddressesByTarget( $data, $options ) ;
+            || $data['type'] == self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP)
+          && $check ) {
+
+          if(  $this->checkNotificationThreshold( $data, $options) ) {
+              parent::getAddressesByTarget( $data, $options ) ;
+          }
       }
    }
 
    /**
     * Summary of getSpecificTargets
-    * @param mixed $data 
-    * @param mixed $options 
+    * @param mixed $data
+    * @param mixed $options
     */
    function getSpecificTargets($data, $options){
       switch( $data['type'] ) {
-         case self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP :            
+         case self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP :
             $this->getLinkedUserByID($options['arsurvey']['users_id']);
             break ;
          case self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP:
@@ -319,7 +356,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
     * Summary of getLinkedUserByID
     * Retreive info for users in $ids of type $type
     * @param mixed $ids array of users_id
-    * @param mixed $type 
+    * @param mixed $type
     */
    function getLinkedUserByID($ids, $type=false) {
       global $DB, $CFG_GLPI;
@@ -343,9 +380,9 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
       foreach ($DB->request($query) as $data) {
          //Add the user email and language in the notified users list
          if ($data['notif']) {
-            $author_email = UserEmail::getDefaultForUser($data['id']);
+            $author_email = UserEmail::getDefaultForUser($data['users_id']);
             $author_lang  = $data["language"];
-            $author_id    = $data['id'];
+            $author_id    = $data['users_id'];
 
             if (!empty($data['altemail'])
                 && $data['altemail'] != $author_email
@@ -360,7 +397,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
             }
             $this->addToAddressesList(array('email'    => $author_email,
                                             'language' => $author_lang,
-                                            'id'       => $author_id,
+                                            'users_id' => $author_id,
                                             'type'     => $type )); // $type is passed only to authorize view of tickets by watchers (or observers)
          }
       }
@@ -368,7 +405,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
 
    /**
     * Summary of addGroupsToTargets
-    * @param mixed $entity 
+    * @param mixed $entity
     */
    function addGroupsToTargets($entity) {
       global $LANG, $DB;
@@ -384,7 +421,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
                 ORDER BY `name`";
 
       foreach ($DB->request($query) as $data) {
-         //Add group 
+         //Add group
          $this->addTarget($data["id"], $LANG['plugin_arsurveys']['targets']['tech_assigned_in_group']. " " .$data["name"], self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP);
          $this->addTarget($data["id"], $LANG['plugin_arsurveys']['targets']['manager_tech_assigned_in_group']. " " .$data["name"], self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP);
       }

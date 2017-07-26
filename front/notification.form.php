@@ -45,7 +45,7 @@ $notif = new PluginArsurveysNotification;
 
 //Save profile
 if (isset ($_POST['update_notification_config'])) {
-   if(TableExists('glpi_profilerights')) {
+   if (TableExists('glpi_profilerights')) {
       $originalNotif->check($_POST['notifications_id'], UPDATE);
    } else {
       $originalNotif->check($_POST['notifications_id'], "w");
@@ -53,4 +53,3 @@ if (isset ($_POST['update_notification_config'])) {
    $notif->update($_POST);
    Html::back();
 }
-?>

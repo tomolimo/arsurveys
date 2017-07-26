@@ -42,15 +42,15 @@ require_once('../inc/config.class.php');
 
 $config = new PluginArsurveysConfig();
 if (isset($_POST["update"])) {
-   if(TableExists('glpi_profilerights')) {
+   if (TableExists('glpi_profilerights')) {
       $config->check($_POST['id'], UPDATE);
    } else {
-      $config->check($_POST['id'],'w');
+      $config->check($_POST['id'], 'w');
    }
 
     $config->update($_POST);
 
     Html::back();
-} 
+}
 Html::redirect($CFG_GLPI["root_doc"]."/front/config.form.php?forcetab=".
              urlencode('PluginArsurveysConfig$1'));
