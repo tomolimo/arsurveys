@@ -65,7 +65,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
                       'ticketsatisfaction.responsetime'    => 'Responsetime satisfaction',
                       'ticketsatisfaction.assigntousers'   => 'Assigned To Technicians',
                       'ticketsatisfaction.assigntogroups'  => 'Assigned To Groups',
-                      'ticketsatisfaction.ticketopendate'  => 'Ticket openning date',
+                      'ticketsatisfaction.ticketopendate'  => 'Ticket opening date',
                       'ticketsatisfaction.ticketsolvedate' => 'Ticket resolution date'
                       );
 

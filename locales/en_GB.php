@@ -68,5 +68,5 @@ $LANG['plugin_arsurveys']['ticketsatisfaction.friendliness'] = 'Friendliness sat
 $LANG['plugin_arsurveys']['ticketsatisfaction.responsetime'] = 'Responsetime satisfaction';
 $LANG['plugin_arsurveys']['ticketsatisfaction.assigntousers'] = 'Assigned To Technicians';
 $LANG['plugin_arsurveys']['ticketsatisfaction.assigntogroups'] = 'Assigned To Groups';
-$LANG['plugin_arsurveys']['ticketsatisfaction.ticketopendate'] = 'Ticket openning date';
+$LANG['plugin_arsurveys']['ticketsatisfaction.ticketopendate'] = 'Ticket opening date';
 $LANG['plugin_arsurveys']['ticketsatisfaction.ticketsolvedate'] = 'Ticket resolution date';
