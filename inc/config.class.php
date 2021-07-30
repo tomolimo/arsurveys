@@ -37,12 +37,11 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
 class PluginArsurveysConfig extends Config {
 
-   static private $_instance = NULL;
+   static private $_instance = null;
 
-   function getName($with_comment=0) {
-      global $LANG;
+   function getName($with_comment = 0) {
 
-      return $LANG['plugin_arsurveys']["name"];
+      return __("AR Surveys", "arsurveys");
    }
 
     /**
@@ -62,55 +61,54 @@ class PluginArsurveysConfig extends Config {
 
 
    static function showConfigForm($item) {
-      global $LANG, $DB;
+      global $DB;
 
       $config = self::getInstance();
 
       $config->showFormHeader();
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['bad_threshold']."&nbsp;:</td><td colspan=2>";
+      echo "<td colspan=2>".__("Negative Threshold: if satisfaction survey result is less than or equal (<=) to this value a notification will be triggered as a 'negative survey result'", 'arsurveys')."&nbsp;:</td><td colspan=2>";
       echo "<input type='text' name='bad_threshold' value='".$config->fields['bad_threshold']."'>";
       echo "</td></tr>\n";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['good_threshold']."&nbsp;:</td><td colspan=2>";
+      echo "<td colspan=2>".__("Positive Threshold: if satisfaction survey result is greater than or equal (=>) to this value a notification will be triggered as a 'positive survey result'", 'arsurveys')."&nbsp;:</td><td colspan=2>";
       echo "<input type='text' name='good_threshold' value='".$config->fields['good_threshold']."'>";
       echo "</td></tr>\n";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td colspan=2>";
+      echo "<td colspan=2>".__("'Positive Survey Result' notifications are not sent when user's comments to satisfaction survey is empty. Send them anyway?", 'arsurveys')."&nbsp;:</td><td colspan=2>";
       Dropdown::showYesNo("force_positive_notif", $config->fields["force_positive_notif"]);
       echo "</td></tr>\n";
 
       echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['comments']."&nbsp;:";
+      echo "<td colspan=2>".__("Comments", 'arsurveys')."&nbsp;:";
       echo "</td><td colspan=2 class='center'>";
       echo "<textarea cols='60' rows='5' name='comment' >".$config->fields['comment']."</textarea>";
       echo "</td></tr>\n";
 
-      echo "<tr class='tab_bg_1'>";
-      echo "<td colspan=2>".$LANG['plugin_arsurveys']['config']['datemod']."&nbsp;: </td><td colspan=2>";
-      echo Html::convDateTime($config->fields["date_mod"]);
-      echo "</td></tr>\n";
+      //echo "<tr class='tab_bg_1'>";
+      //echo "<td colspan=2>".__("Last update", 'arsurveys')."&nbsp;: </td><td colspan=2>";
+      //echo Html::convDateTime($config->fields["date_mod"]);
+      //echo "</td></tr>\n";
 
-      $config->showFormButtons(array('candel'=>false));
+      $config->showFormButtons(['candel'=>false]);
 
       return false;
    }
 
 
-   function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
-      global $LANG;
+   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
 
-      if ($item->getType()=='Config') {
-         return $LANG['plugin_arsurveys']["name"];
+      if ($item->getType() == 'Config') {
+         return __("AR Surveys", 'arsurveys');
       }
       return '';
    }
 
 
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
+   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
       if ($item->getType()=='Config') {
          self::showConfigForm($item);

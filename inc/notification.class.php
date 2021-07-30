@@ -49,19 +49,19 @@ class PluginArsurveysNotification extends CommonDBTM {
     * @param mixed $options array of options
     * @return boolean
     */
-   function showForm($item, $options=array()) {
-      global $LANG;
+   function showForm($item, $options = []) {
+      global $DB;
 
       $target = $this->getFormURL();
       if (isset($options['target'])) {
          $target = $options['target'];
       }
 
-      if ((TableExists('glpi_profilerights') && !Notification::canView()) || (!TableExists('glpi_profilerights') && !Session::haveRight("notification", "r"))) {
+      if (($DB->tableExists('glpi_profilerights') && !Notification::canView()) || (!$DB->tableExists('glpi_profilerights') && !Session::haveRight("notification", "r"))) {
          return false;
       }
 
-      $canedit = (TableExists('glpi_profilerights') && Notification::canUpdate()) || Session::haveRight("notification", "w");
+      $canedit = ($DB->tableExists('glpi_profilerights') && Notification::canUpdate()) || Session::haveRight("notification", "w");
 
       $bad_survey = false;
       if ($item->fields['event'] == 'bad_survey') {
@@ -72,7 +72,7 @@ class PluginArsurveysNotification extends CommonDBTM {
       $threshold = ($bad_survey?$config->fields['bad_threshold']:$config->fields['good_threshold']); // by default
       if (!$this->getFromDBByNotification($item->getID())) {
          // must create it with default values
-         $this->add( array( 'notifications_id' => $item->getID()));
+         $this->add( [ 'notifications_id' => $item->getID()]);
       }
       if (isset($this->fields['threshold'])) {
          $threshold = $this->fields['threshold'];
@@ -86,17 +86,17 @@ class PluginArsurveysNotification extends CommonDBTM {
       echo "<form action='".$target."' method='post'>";
       echo "<table class='tab_cadre_fixe'>";
 
-      echo "<tr><th colspan='2'>".$LANG['plugin_arsurveys']["name"]." : ".$LANG['plugin_arsurveys']["notifconfig"] ."</th></tr>";
+      echo "<tr><th colspan='2'>".__("AR Surveys",'arsurveys')." : ".__("Set threshold",'arsurveys') ."</th></tr>";
 
       echo "<tr class='tab_bg_2'>";
-      echo "<td >".($bad_survey?$LANG['plugin_arsurveys']['config']['bad_threshold']:$LANG['plugin_arsurveys']['config']['good_threshold'])."&nbsp;:</td><td >";
+      echo "<td >".($bad_survey?__("Negative Threshold: if satisfaction survey result is less than or equal (<=) to this value a notification will be triggered as a 'negative survey result'", 'arsurveys'):__("Positive Threshold: if satisfaction survey result is greater than or equal (=>) to this value a notification will be triggered as a 'positive survey result'", 'arsurveys'))."&nbsp;:</td><td >";
       echo "<input type='text' name='threshold' value='".$threshold."'>";
       echo "</td></tr>";
 
       if (!$bad_survey) {
          // then show the setting to force positive notifications even if user's comment to satisfaction survey is empty
          echo "<tr class='tab_bg_2'>";
-         echo "<td >".$LANG['plugin_arsurveys']['config']['force_positive_notif']."&nbsp;:</td><td >";
+         echo "<td >".__("'Positive Survey Result' notifications are not sent when user's comments to satisfaction survey is empty. Send them anyway?", 'arsurveys')."&nbsp;:</td><td >";
          Dropdown::showYesNo("force_positive_notif", $force_positive_notif);
          echo "</td></tr>";
       }
@@ -105,7 +105,7 @@ class PluginArsurveysNotification extends CommonDBTM {
          echo "<td class='center' colspan='2'>";
          echo "<input type='hidden' name='id' value=".$this->getID().">";
          echo "<input type='hidden' name='notifications_id' value=".$item->getID().">";
-         echo "<input type='submit' name='update_notification_config' value=\"".$LANG['plugin_arsurveys']['config']['save']."\"
+         echo "<input type='submit' name='update_notification_config' value=\"".__("Save")."\"
                class='submit'>";
          echo "</td></tr>";
       }
@@ -120,20 +120,34 @@ class PluginArsurveysNotification extends CommonDBTM {
     */
    function getFromDBByNotification($notifications_id) {
       global $DB;
-
-      $query = "SELECT * FROM `".$this->getTable()."`
-               WHERE `notifications_id` = '" . $notifications_id . "' ";
-      if ($result = $DB->query($query)) {
-         if ($DB->numrows($result) != 1) {
+      $res = $DB->request(
+                    $this->getTable(),
+                    ['notifications_id' => $notifications_id]
+         );
+      if($res) {
+         if($res->numrows() != 1) {
             return false;
          }
-         $this->fields = $DB->fetch_assoc($result);
-         if (is_array($this->fields) && count($this->fields)) {
+         $this->fields = $res->next();
+         if(is_array($this->fields) && count($this->fields)) {
             return true;
          } else {
             return false;
          }
       }
+      //$query = "SELECT * FROM `".$this->getTable()."`
+      //         WHERE `notifications_id` = '" . $notifications_id . "' ";
+      //if ($result = $DB->query($query)) {
+      //   if ($DB->numrows($result) != 1) {
+      //      return false;
+      //   }
+      //   $this->fields = $DB->fetch_assoc($result);
+      //   if (is_array($this->fields) && count($this->fields)) {
+      //      return true;
+      //   } else {
+      //      return false;
+      //   }
+      //}
       return false;
    }
 
@@ -143,12 +157,13 @@ class PluginArsurveysNotification extends CommonDBTM {
     * @param mixed      $withtemplate indicate that's use template
     * @return array|string|translated
     */
-   function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
-      global $LANG;
+   function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
 
-      if ($item->getType()=='Notification' && $item->fields['itemtype'] == "PluginArsurveysTicketSatisfaction" && $item->getID() > 0) {
+      if ($item->getType() == 'Notification' 
+          && $item->fields['itemtype'] == "PluginArsurveysTicketSatisfaction" 
+          && $item->getID() > 0) {
 
-         return $LANG['plugin_arsurveys']["name"];
+         return __("AR Surveys", 'arsurveys');
       }
       return '';
    }
@@ -160,7 +175,7 @@ class PluginArsurveysNotification extends CommonDBTM {
     * @param mixed      $withtemplate incate if it(s withtemplate
     * @return boolean
     */
-   static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
+   static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
 
       if ($item->getType()=='Notification' && $item->fields['itemtype'] == "PluginArsurveysTicketSatisfaction" && $item->getID() > 0) {
          $notif = new self();
@@ -177,8 +192,10 @@ class PluginArsurveysNotification extends CommonDBTM {
    static function plugin_item_purge_arsurveys($item) {
       // just delete the record linked to current TicketValidation item
       $me = new self();
-      $me->deleteByCriteria(array('notifications_id' => $item->getID()));
+      $me->deleteByCriteria(['notifications_id' => $item->getID()]);
    }
+
+
 
 }
 

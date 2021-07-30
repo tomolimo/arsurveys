@@ -29,6 +29,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------
  */
 
+define ("PLUGIN_ARSURVEYS_VERSION", "3.0.2");
 
 // ----------------------------------------------------------------------
 // Original Author of file: Olivier Moron
@@ -39,30 +40,39 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
  * @return null
  */
 function plugin_init_arsurveys() {
-   global $PLUGIN_HOOKS,$LANG,$CFG_GLPI;
+   global $PLUGIN_HOOKS, $CFG_GLPI;
 
    $PLUGIN_HOOKS['csrf_compliant']['arsurveys'] = true;
 
-   Plugin::registerClass('PluginArsurveysTicketSatisfaction', array ('notificationtemplates_types'  => true));
+   Plugin::registerClass('PluginArsurveysTicketSatisfaction', ['notificationtemplates_types'  => true]);
 
    $conf=new Config;
    if ($conf->canUpdate()) {
-      Plugin::registerClass('PluginArsurveysConfig', array('addtabon' => 'Config'));
+      Plugin::registerClass('PluginArsurveysConfig', ['addtabon' => 'Config']);
       $PLUGIN_HOOKS['config_page']['arsurveys'] = 'front/config.form.php';
    }
 
-   Plugin::registerClass('PluginArsurveysNotification', array('addtabon' => 'Notification'));
+   Plugin::registerClass('PluginArsurveysNotification', ['addtabon' => 'Notification']);
 
-   $PLUGIN_HOOKS['item_update']['arsurveys'] = array(
-      'TicketSatisfaction' => array('PluginArsurveysTicketSatisfaction', 'plugin_item_update_arsurveys')
-      );
-   $PLUGIN_HOOKS['pre_item_update']['arsurveys'] = array(
-      'TicketSatisfaction' => array('PluginArsurveysTicketSatisfaction', 'plugin_pre_item_update_arsurveys')
-      );
-   $PLUGIN_HOOKS['item_purge']['arsurveys'] = array(
-      'Notification' => array('PluginArsurveysNotification', 'plugin_item_purge_arsurveys')
-      );
-
+   $PLUGIN_HOOKS['item_update']['arsurveys'] = [
+      'TicketSatisfaction' => ['PluginArsurveysTicketSatisfaction', 'plugin_item_update_arsurveys']
+      ];
+   $PLUGIN_HOOKS['pre_item_update']['arsurveys'] = [
+      'TicketSatisfaction' => ['PluginArsurveysTicketSatisfaction', 'plugin_pre_item_update_arsurveys']
+      ];
+   $PLUGIN_HOOKS['item_purge']['arsurveys'] = [
+      'Notification' => ['PluginArsurveysNotification', 'plugin_item_purge_arsurveys']
+      ];
+   // Notifications
+   $PLUGIN_HOOKS['item_get_events']['arsurveys'] =[
+      'PluginArsurveysNotificationTargetTicketSatisfaction' => ['PluginArsurveysNotificationTargetTicketSatisfaction', 'addEvents']
+      ];
+   $PLUGIN_HOOKS['item_action_targets']['arsurveys'] = [
+      'PluginArsurveysNotificationTargetTicketSatisfaction' => ['PluginArsurveysNotificationTargetTicketSatisfaction', 'addActionTargets']
+      ];
+   $PLUGIN_HOOKS['item_get_datas']['arsurveys'] = [
+      'PluginArsurveysNotificationTargetTicketSatisfaction' => ['PluginArsurveysNotificationTargetTicketSatisfaction', 'addDatas']
+      ];
 }
 
 
@@ -71,11 +81,14 @@ function plugin_init_arsurveys() {
  * @return array
  */
 function plugin_version_arsurveys() {
-    global $LANG;
-    return array('name'           => $LANG['plugin_arsurveys']["name"],
-                 'version'        => '1.4.2',
-                 'author'         => 'Olivier Moron',
-                 'minGlpiVersion' => '9.1');// For compatibility / no install in version < 0.83
+    return ['name'           => __('AR Surveys', 'arsurveys'),
+            'version'        => PLUGIN_ARSURVEYS_VERSION,
+            'author'         => 'Olivier Moron',
+            'license'        => 'AGPLv3+',
+            'homepage'       => 'https://github.com/tomolimo/arsurveys',
+            'requirements'   => ['glpi' => ['min' => '9.5',
+                                           'max' => '9.6']]
+                                ];
 }
 
 
@@ -85,11 +98,10 @@ function plugin_version_arsurveys() {
  */
 function plugin_arsurveys_check_prerequisites() {
 
-   if (version_compare(GLPI_VERSION, '9.1', 'lt')) {
-      echo "This plugin requires GLPI >= 9.1";
-      return false;
+   if (version_compare(GLPI_VERSION, '9.5', 'lt') || version_compare(GLPI_VERSION, '9.6', 'ge')) {
+      echo "This plugin requires GLPI >= 9.5 and < 9.6";      return false;
    }
-    return true;
+   return true;
 }
 
 
@@ -99,7 +111,7 @@ function plugin_arsurveys_check_prerequisites() {
  * @param boolean $verbose for verbose mode
  * @return boolean
  */
-function plugin_arsurveys_check_config($verbose=false) {
+function plugin_arsurveys_check_config($verbose = false) {
     return true;
 }
 

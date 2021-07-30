@@ -1,0 +1,155 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2021-07-26 11:18+0200\n"
+"PO-Revision-Date: 2021-07-26 11:19+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __:1,2t;_e:1,2t;_x:1c,2,3t;_n:1,2,4t;__s:1,2t;"
+"_ex:1c,2,3t;_sx:1c,2,3t;_nx:1c,2,3,5t\n"
+"X-Poedit-SearchPath-0: front\n"
+"X-Poedit-SearchPath-1: inc\n"
+"X-Poedit-SearchPath-2: hook.php\n"
+"X-Poedit-SearchPath-3: setup.php\n"
+
+#: inc/config.class.php:44 inc/config.class.php:105
+#: inc/notification.class.php:89 inc/notification.class.php:166 setup.php:84
+msgid "AR Surveys"
+msgstr "AR Surveys"
+
+#: inc/config.class.php:71 inc/notification.class.php:92
+msgid ""
+"Negative Threshold: if satisfaction survey result is less than or equal (<=) "
+"to this value a notification will be triggered as a 'negative survey result'"
+msgstr ""
+"Negative Threshold: if satisfaction survey result is less than or equal (<=) "
+"to this value a notification will be triggered as a 'negative survey result'"
+
+#: inc/config.class.php:76 inc/notification.class.php:92
+msgid ""
+"Positive Threshold: if satisfaction survey result is greater than or equal "
+"(=>) to this value a notification will be triggered as a 'positive survey "
+"result'"
+msgstr ""
+"Positive Threshold: if satisfaction survey result is greater than or equal "
+"(=>) to this value a notification will be triggered as a 'positive survey "
+"result'"
+
+#: inc/config.class.php:81 inc/notification.class.php:99
+msgid ""
+"'Positive Survey Result' notifications are not sent when user's comments to "
+"satisfaction survey is empty. Send them anyway?"
+msgstr ""
+"'Positive Survey Result' notifications are not sent when user's comments to "
+"satisfaction survey is empty. Send them anyway?"
+
+#: inc/config.class.php:86
+msgid "Comments"
+msgstr "Comments"
+
+#: inc/notification.class.php:89
+msgid "Set threshold"
+msgstr "Set threshold"
+
+#: inc/notificationtargetticketsatisfaction.class.php:100
+msgid "Negative survey result"
+msgstr "Negative survey result"
+
+#: inc/notificationtargetticketsatisfaction.class.php:101
+msgid "Positive survey result"
+msgstr "Positive survey result"
+
+#: inc/notificationtargetticketsatisfaction.class.php:135
+msgid "Survey answer type"
+msgstr "Survey answer type"
+
+#: inc/notificationtargetticketsatisfaction.class.php:136
+msgid "User name"
+msgstr "User name"
+
+#: inc/notificationtargetticketsatisfaction.class.php:137
+msgid "Ticket number"
+msgstr "Ticket number"
+
+#: inc/notificationtargetticketsatisfaction.class.php:138
+msgid "Ticket entity"
+msgstr "Ticket entity"
+
+#: inc/notificationtargetticketsatisfaction.class.php:139
+msgid "Ticket Title"
+msgstr "Ticket Title"
+
+#: inc/notificationtargetticketsatisfaction.class.php:140
+msgid "Ticket Requesters"
+msgstr "Ticket Requesters"
+
+#: inc/notificationtargetticketsatisfaction.class.php:141
+msgid "Satisfaction URL"
+msgstr "Satisfaction URL"
+
+#: inc/notificationtargetticketsatisfaction.class.php:142
+msgid "Start date"
+msgstr "Start date"
+
+#: inc/notificationtargetticketsatisfaction.class.php:143
+msgid "Answer date"
+msgstr "Answer date"
+
+#: inc/notificationtargetticketsatisfaction.class.php:144
+msgid "Quality satisfaction"
+msgstr "Quality satisfaction"
+
+#: inc/notificationtargetticketsatisfaction.class.php:145
+msgid "Survey comment"
+msgstr "Survey comment"
+
+#: inc/notificationtargetticketsatisfaction.class.php:146
+msgid "Friendliness satisfaction"
+msgstr "Friendliness satisfaction"
+
+#: inc/notificationtargetticketsatisfaction.class.php:147
+msgid "Responsetime satisfaction"
+msgstr "Responsetime satisfaction"
+
+#: inc/notificationtargetticketsatisfaction.class.php:148
+msgid "Assigned To Technicians"
+msgstr "Assigned To Technicians"
+
+#: inc/notificationtargetticketsatisfaction.class.php:149
+msgid "Assigned To Groups"
+msgstr "Assigned To Groups"
+
+#: inc/notificationtargetticketsatisfaction.class.php:150
+msgid "Ticket opening date"
+msgstr "Ticket opening date"
+
+#: inc/notificationtargetticketsatisfaction.class.php:151
+msgid "Ticket resolution date"
+msgstr "Ticket resolution date"
+
+#: inc/notificationtargetticketsatisfaction.class.php:434
+#: inc/notificationtargetticketsatisfaction.class.php:594
+msgid "Technician in charge of this ticket within Group"
+msgstr "Technician in charge of this ticket within Group"
+
+#: inc/notificationtargetticketsatisfaction.class.php:435
+#: inc/notificationtargetticketsatisfaction.class.php:619
+msgid "Manager of Group for Technician in charge of this ticket within Group"
+msgstr "Manager of Group for Technician in charge of this ticket within Group"
+
+#: inc/ticketsatisfaction.class.php:41
+msgid "Ticket surveys"
+msgstr "Ticket surveys"
+
+#~ msgid "Last update"
+#~ msgstr "Last update"
+
+#~ msgid "Save"
+#~ msgstr "Save"

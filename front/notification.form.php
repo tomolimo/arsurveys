@@ -35,6 +35,7 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 // ----------------------------------------------------------------------
 
 define('GLPI_ROOT', '../../..');
+global $DB;
 
 include (GLPI_ROOT."/inc/includes.php");
 //Session::checkRight("notification", "w");
@@ -45,7 +46,7 @@ $notif = new PluginArsurveysNotification;
 
 //Save profile
 if (isset ($_POST['update_notification_config'])) {
-   if (TableExists('glpi_profilerights')) {
+   if ($DB->tableExists('glpi_profilerights')) {
       $originalNotif->check($_POST['notifications_id'], UPDATE);
    } else {
       $originalNotif->check($_POST['notifications_id'], "w");

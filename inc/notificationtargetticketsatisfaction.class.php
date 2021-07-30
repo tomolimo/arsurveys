@@ -1,11 +1,12 @@
 <?php
+use ScssPhp\ScssPhp\Formatter\Nested;
 /*
  * -------------------------------------------------------------------------
 ARSurveys plugin
 Monitors via notifications the results of surveys
 Provides bad result notification as well as good result notifications
 
-Copyright (C) 2016 by Raynet SAS a company of A.Raymond Network.
+Copyright (C) 2016-2021 by Raynet SAS a company of A.Raymond Network.
 
 http://www.araymond.com
 -------------------------------------------------------------------------
@@ -50,192 +51,199 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
    private static $OBSERVER;
    private static $REQUESTER;
 
-   private $tags = array('ticketsatisfaction.action'       => 'Survey answer type',
-                      'ticketsatisfaction.user'            => 'User name',
-                      'ticketsatisfaction.ticket'          => 'Ticket number',
-                      'ticketsatisfaction.ticketentity'    => 'Ticket entity',
-                      'ticketsatisfaction.ticketname'      => 'Ticket Title',
-                      'ticketsatisfaction.requesters'      => 'Ticket Requesters',
-                      'ticketsatisfaction.url'             => 'Satisfaction URL',
-                      'ticketsatisfaction.date_begin'      => 'Start date',
-                      'ticketsatisfaction.date_answer'     => 'Answer date',
-                      'ticketsatisfaction.satisfaction'    => 'Quality satisfaction',
-                      'ticketsatisfaction.comment'         => 'Survey comment',
-                      'ticketsatisfaction.friendliness'    => 'Friendliness satisfaction',
-                      'ticketsatisfaction.responsetime'    => 'Responsetime satisfaction',
-                      'ticketsatisfaction.assigntousers'   => 'Assigned To Technicians',
-                      'ticketsatisfaction.assigntogroups'  => 'Assigned To Groups',
-                      'ticketsatisfaction.ticketopendate'  => 'Ticket opening date',
-                      'ticketsatisfaction.ticketsolvedate' => 'Ticket resolution date'
-                      );
+   
 
    /**
     * Summary of __construct
-    * @param mixed $entity 
-    * @param mixed $event 
-    * @param mixed $object 
-    * @param mixed $options 
+    * @param mixed $entity
+    * @param mixed $event
+    * @param mixed $object
+    * @param mixed $options
     */
-   function __construct($entity='', $event='', $object=null, $options=array()){
+   function __construct($entity = '', $event = '', $object = null, $options = []) {
 
       parent::__construct($entity, $event, null, $options); // passes null to prevent $this->obj and $this->target_object to be assigned with wrong values
 
       // defines static variables
-      if( defined('CommonITILActor::ASSIGN') ) {
+      if (defined('CommonITILActor::ASSIGN')) {
          self::$ASSIGN = constant('CommonITILActor::ASSIGN');
       } else {
          self::$ASSIGN = constant('CommonITILObject::ASSIGN');
       }
-      if( defined('CommonITILActor::OBSERVER') ) {
+      if (defined('CommonITILActor::OBSERVER')) {
          self::$OBSERVER = constant('CommonITILActor::OBSERVER');
       } else {
          self::$OBSERVER = constant('CommonITILObject::OBSERVER');
       }
-      if( defined('CommonITILActor::REQUESTER') ) {
+      if (defined('CommonITILActor::REQUESTER')) {
          self::$REQUESTER = constant('CommonITILActor::REQUESTER');
       } else {
          self::$REQUESTER = constant('CommonITILObject::REQUESTER');
       }
 
-   // needs to define the $this->obj to point to associated Ticket, and $this->target_object
-      if( isset($options['item']) ) {
-         $ticket = new Ticket ;
-         $ticket->getFromDB( $options['item']->fields['tickets_id'] ) ;
+      // needs to define the $this->obj to point to associated Ticket, and $this->target_object
+      if (isset($options['item'])) {
+         $ticket = new Ticket;
+         $ticket->getFromDB( $options['item']->fields['tickets_id'] );
          $this->obj = $ticket;
          $this->getObjectItem($this->raiseevent);
       }
    }
 
+
    /**
-    * Summary of getEvents
-    * @return array
+    * Function addEvents call form item_get_events hook
+    * @param PluginArsurveysNotificationTargetTicketSatisfaction $target
     */
-   function getEvents() {
-        global $LANG ;
-        return array('bad_survey' => $LANG['plugin_arsurveys']['bad_survey'],
-                     'good_survey' => $LANG['plugin_arsurveys']['good_survey']);
+   static function addEvents(PluginArsurveysNotificationTargetTicketSatisfaction $target) {
+
+      $target->events = ['bad_survey'  => __('Negative survey result', 'arsurveys'), 
+                         'good_survey' => __('Positive survey result', 'arsurveys')];
    }
 
-    /**
-    * Get all data needed for template processing
-     * @param mixed $event 
-     * @param mixed $options 
-     */
-    function getDatasForTemplate($event, $options=array()) {
-        global $CFG_GLPI, $LANG;
 
-        $events = $this->getAllEvents();
+   /**
+    * Function addActionTargets call form item_action_targets hook
+    * @param PluginArsurveysNotificationTargetTicketSatisfaction $target
+    */
+   static function addActionTargets(PluginArsurveysNotificationTargetTicketSatisfaction $target) {
 
-        $this->datas['##ticketsatisfaction.action##'] = $events[$event];
-
-        $locTicket = $this->obj ;
-
-        $locTicketSatisfaction = $options['ticketsatisfaction']; //$options['item']->fields['ticketsatisfaction'] ;
-        $user = new User();
-        $user->getFromDB(Session::getLoginUserID());
-
-        $this->datas['##ticketsatisfaction.user##'] = $user->getName( ) ;
-        $this->datas['##ticketsatisfaction.ticket##'] = $locTicket->getID() ;
-        $this->datas['##ticketsatisfaction.ticketname##'] = $locTicket->fields['name'];
-        $this->datas['##ticketsatisfaction.ticketopendate##'] = $locTicket->fields['date'];
-        $this->datas['##ticketsatisfaction.ticketsolvedate##'] = $locTicket->fields['solvedate'];
-
-        $this->datas['##ticketsatisfaction.url##'] = urldecode($CFG_GLPI["url_base"]."/index.php?redirect=ticket_".
-                                       $locTicket->getID().'_Ticket$3');
-        $this->datas['##ticketsatisfaction.date_begin##'] = $locTicketSatisfaction->fields['date_begin'];
-        $this->datas['##ticketsatisfaction.date_answer##'] = $locTicketSatisfaction->fields['date_answered'];
-        $this->datas['##ticketsatisfaction.satisfaction##'] = $locTicketSatisfaction->fields['satisfaction'];
-        $this->datas['##ticketsatisfaction.comment##'] = $locTicketSatisfaction->fields['comment'];
-
-        // if this survey criterion is existing in $options
-        if(isset($options['ticketsatisfaction']->input['friendliness'])) {
-            $this->datas['##ticketsatisfaction.friendliness##'] = $options['ticketsatisfaction']->input['friendliness'];
-        }
-
-        // if this survey criterion is existing in $options
-        if(isset($options['ticketsatisfaction']->input['responsetime'])) {
-            $this->datas['##ticketsatisfaction.responsetime##'] = $options['ticketsatisfaction']->input['responsetime'];
-        }
-
-        $this->datas["##ticketsatisfaction.assigntousers##"] = '';
-        if ($locTicket->countUsers(self::$ASSIGN)) {
-           $users = array();
-           foreach ($locTicket->getUsers(self::$ASSIGN) as $tmp) {
-              $uid = $tmp['users_id'];
-              $user_tmp = new User();
-              if ($user_tmp->getFromDB($uid)) {
-                 $users[$uid] = $user_tmp->getName();
-              }
-           }
-           $this->datas["##ticketsatisfaction.assigntousers##"] = implode(', ',$users);
-        }
-
-        $this->datas["##ticketsatisfaction.assigntogroups##"] = '';
-        if ($locTicket->countGroups(self::$ASSIGN)) {
-           $groups = array();
-           foreach ($locTicket->getGroups(self::$ASSIGN) as $tmp) {
-              $gid = $tmp['groups_id'];
-              $groups[$gid] = Dropdown::getDropdownName('glpi_groups', $gid);
-           }
-           $this->datas["##ticketsatisfaction.assigntogroups##"] = implode(', ',$groups);
-        }
-
-        $entity = new Entity();
-        if ($entity->getFromDB($locTicket->getField('entities_id'))) {
-           $this->datas["##ticketsatisfaction.ticketentity##"] = $entity->getField('completename');
-        }
-
-        $this->datas["##ticketsatisfaction.requesters##"] = '';
-        if ($locTicket->countUsers(self::$REQUESTER)) {
-           $users = array();
-           foreach ($locTicket->getUsers(self::$REQUESTER) as $tmpusr) {
-              $uid = $tmpusr['users_id'];
-              $user_tmp = new User();
-              if ($uid && $user_tmp->getFromDB($uid)) {
-                 $users[] = $user_tmp->getName();
-              } else {
-                 // Anonymous users only in xxx.authors, not in authors
-                 $users[] = $tmpusr['alternative_email'];
-              }
-           }
-           $this->datas["##ticketsatisfaction.requesters##"] = implode(', ',$users);
-        }
-
-         $this->getTags();
-        foreach ($this->tag_descriptions[NotificationTarget::TAG_LANGUAGE] as $tag => $values) {
-            if (!isset($this->datas[$tag])) {
-                $this->datas[$tag] = $values['label'];
+      $check = $target->checkNotificationTarget( $target->data, $target->options );
+      if (($target->data['type'] == PluginArsurveysNotificationTargetTicketSatisfaction::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP
+               || $target->data['type'] == PluginArsurveysNotificationTargetTicketSatisfaction::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP)
+             && $check ) {
+         $target->target = [];
+         $result = $target->checkNotificationThreshold($target->data, $target->options);
+         if ($result) {
+            switch ($target->data['type']) {
+               case self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP :
+                  $target->getLinkedUserByID($target->options['arsurvey']['users_id']);
+                  break;
+               case self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP:
+                  $target->addForGroup(1, $target->data['items_id']);
+                  break;
             }
-        }
-        // gestion traduction des champs supplémentaires
-        foreach($this->tags as $tag => $value){
-            if (!isset($this->datas["##lang.".$tag."##"])) {
-                if(isset($LANG['plugin_arsurveys'][$tag])){
-                    $this->datas["##lang.".$tag."##"] = $LANG['plugin_arsurveys'][$tag];
-                }else{
-                    $this->datas["##lang.".$tag."##"] = $value;
-                }
+         }
+      }
+   }
+
+
+   public function getTags() {
+      //$initial = parent::getTags();
+      //$this->obj = new Ticket;
+      //parent::getTags();
+      $tags = ['ticketsatisfaction.action'          => __('Survey answer type', 'arsurveys'),
+               'ticketsatisfaction.user'            => __('User name', 'arsurveys'),
+               'ticketsatisfaction.ticket'          => __('Ticket number', 'arsurveys'),
+               'ticketsatisfaction.ticketentity'    => __('Ticket entity', 'arsurveys'),
+               'ticketsatisfaction.ticketname'      => __('Ticket Title', 'arsurveys'),
+               'ticketsatisfaction.requesters'      => __('Ticket Requesters', 'arsurveys'),
+               'ticketsatisfaction.url'             => __('Satisfaction URL', 'arsurveys'),
+               'ticketsatisfaction.date_begin'      => __('Start date', 'arsurveys'),
+               'ticketsatisfaction.date_answer'     => __('Answer date', 'arsurveys'),
+               'ticketsatisfaction.satisfaction'    => __('Quality satisfaction', 'arsurveys'),
+               'ticketsatisfaction.comment'         => __('Survey comment', 'arsurveys'),
+               'ticketsatisfaction.friendliness'    => __('Friendliness satisfaction', 'arsurveys'),
+               'ticketsatisfaction.responsetime'    => __('Responsetime satisfaction', 'arsurveys'),
+               'ticketsatisfaction.assigntousers'   => __('Assigned To Technicians', 'arsurveys'),
+               'ticketsatisfaction.assigntogroups'  => __('Assigned To Groups', 'arsurveys'),
+               'ticketsatisfaction.ticketopendate'  => __('Ticket opening date', 'arsurveys'),
+               'ticketsatisfaction.ticketsolvedate' => __('Ticket resolution date', 'arsurveys')
+               ];
+      foreach ($tags as $tag => $label) {
+         $this->addTagToList(['tag'    => $tag,
+                              'label'  => $label,
+                              'value'  => true,
+                              'events' => parent::TAG_FOR_ALL_EVENTS]);
+      }
+   }
+
+
+   /**
+    * Function addDatas call from item_get_datas
+    * @param PluginArsurveysNotificationTargetTicketSatisfaction $target
+    */
+   static function addDatas(PluginArsurveysNotificationTargetTicketSatisfaction $target) {
+
+      global $CFG_GLPI;
+
+      $events = $target->getAllEvents();
+      
+      $target->data['##ticketsatisfaction.action##'] = $events[$target->raiseevent];
+
+      $locTicket = $target->obj;
+
+      $locTicketSatisfaction = $target->options['ticketsatisfaction']; //$options['item']->fields['ticketsatisfaction'] ;
+      $user = new User();
+      $user->getFromDB(Session::getLoginUserID());
+
+      $target->data['##ticketsatisfaction.user##'] = $user->getName( );
+      $target->data['##ticketsatisfaction.ticket##'] = $locTicket->getID();
+      $target->data['##ticketsatisfaction.ticketname##'] = $locTicket->fields['name'];
+      $target->data['##ticketsatisfaction.ticketopendate##'] = $locTicket->fields['date'];
+      $target->data['##ticketsatisfaction.ticketsolvedate##'] = $locTicket->fields['solvedate'];
+
+      $target->data['##ticketsatisfaction.url##'] = urldecode($CFG_GLPI["url_base"]."/index.php?redirect=ticket_".
+                                     $locTicket->getID().'_Ticket$3');
+      $target->data['##ticketsatisfaction.date_begin##'] = $locTicketSatisfaction->fields['date_begin'];
+      $target->data['##ticketsatisfaction.date_answer##'] = $locTicketSatisfaction->fields['date_answered'];
+      $target->data['##ticketsatisfaction.satisfaction##'] = $locTicketSatisfaction->fields['satisfaction'];
+      $target->data['##ticketsatisfaction.comment##'] = $locTicketSatisfaction->fields['comment'];
+
+      // if this survey criterion is existing in $options
+      if (isset($target->options['ticketsatisfaction']->input['friendliness'])) {
+         $target->data['##ticketsatisfaction.friendliness##'] = $target->options['ticketsatisfaction']->input['friendliness'];
+      }
+
+      // if this survey criterion is existing in $options
+      if (isset($target->options['ticketsatisfaction']->input['responsetime'])) {
+         $target->data['##ticketsatisfaction.responsetime##'] = $target->options['ticketsatisfaction']->input['responsetime'];
+      }
+
+      $target->data["##ticketsatisfaction.assigntousers##"] = '';
+      if ($locTicket->countUsers(self::$ASSIGN)) {
+         $users = [];
+         foreach ($locTicket->getUsers(self::$ASSIGN) as $tmp) {
+            $uid = $tmp['users_id'];
+            $user_tmp = new User();
+            if ($user_tmp->getFromDB($uid)) {
+               $users[$uid] = $user_tmp->getName();
             }
-        }
+         }
+         $target->data["##ticketsatisfaction.assigntousers##"] = implode(', ', $users);
+      }
 
-    }
+      $target->data["##ticketsatisfaction.assigntogroups##"] = '';
+      if ($locTicket->countGroups(self::$ASSIGN)) {
+         $groups = [];
+         foreach ($locTicket->getGroups(self::$ASSIGN) as $tmp) {
+            $gid = $tmp['groups_id'];
+            $groups[$gid] = Dropdown::getDropdownName('glpi_groups', $gid);
+         }
+         $target->data["##ticketsatisfaction.assigntogroups##"] = implode(', ', $groups);
+      }
 
-    /**
-     * Summary of getTags
-     */
-    function getTags() {
-        global $LANG;
-        foreach ($this->tags as $tag => $label) {
-           if( ($tag != 'ticketsatisfaction.friendliness' && $tag != 'ticketsatisfaction.responsetime') ||
-              (FieldExists( 'glpi_ticketsatisfactions', 'friendliness' ) && FieldExists('glpi_ticketsatisfactions', 'responsetime' )) ) {
-               $this->addTagToList(array('tag'   => $tag,
-                                      'label' => $LANG['plugin_arsurveys']["$tag"],
-                                      'value' => true));
-           }
-        }
+      $entity = new Entity();
+      if ($entity->getFromDB($locTicket->getField('entities_id'))) {
+         $target->data["##ticketsatisfaction.ticketentity##"] = $entity->getField('completename');
+      }
 
-        asort($this->tag_descriptions);
-    }
+      $target->data["##ticketsatisfaction.requesters##"] = '';
+      if ($locTicket->countUsers(self::$REQUESTER)) {
+         $users = [];
+         foreach ($locTicket->getUsers(self::$REQUESTER) as $tmpusr) {
+            $uid = $tmpusr['users_id'];
+            $user_tmp = new User();
+            if ($uid && $user_tmp->getFromDB($uid)) {
+               $users[] = $user_tmp->getName();
+            } else {
+               // Anonymous users only in xxx.authors, not in authors
+               $users[] = $tmpusr['alternative_email'];
+            }
+         }
+         $target->data["##ticketsatisfaction.requesters##"] = implode(', ', $users);
+      }
+   }
 
 
    /**
@@ -243,64 +251,66 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
    * @param mixed $data
    * @param mixed $options
    */
-   function checkNotificationTarget( $data, &$options ) {
+   function checkNotificationTarget($data, &$options) {
       // get ticket
-      $tick = $this->obj ;
-      $members = array( ) ;
-      $ids = array() ;
-      $ret = false ; // no users
-      if(!isset($options['arsurvey']['users_id'])){
-        $options['arsurvey']['users_id']=array(); // empty array
+      $tick = $this->obj;
+      $members = [ ];
+      $ids = [];
+      $ret = false; // no users
+      if (!isset($options['arsurvey']['users_id'])) {
+         $options['arsurvey']['users_id']=[]; // empty array
       }
 
-      $grp = new Group ;
-      $grp->getFromDB( $data['items_id'] ) ;
-      Group_User::getDataForGroup( $grp, $members, $ids ) ;
+      $grp = new Group;
+      $grp->getFromDB( $data['items_id'] );
+      Group_User::getDataForGroup( $grp, $members, $ids );
 
       // search for all ticket tech belonging to this group
       // and store them into options
       // will be used later
 
-      foreach( $tick->getUsers( self::$ASSIGN ) as $tech ) {
-         if( in_array( $tech['users_id'], $ids )  ) {
+      foreach ($tick->getUsers( self::$ASSIGN ) as $tech) {
+         if (in_array( $tech['users_id'], $ids )) {
             // then send notification
             $options['arsurvey']['users_id'][] = $tech['users_id'];
             $ret = true; // at least one user
          }
 
       }
-      return $ret ;
+      return $ret;
    }
+
 
    /**
     * Summary of checkNotificationThreshold
+    * check if the notification have to be sent
     * @param mixed $data
     * @param mixed $options
     * @return bool
     */
-   function checkNotificationThreshold( $data, $options ) {
-      $config = PluginArsurveysConfig::getInstance() ;
-      $notif = new PluginArsurveysNotification ;
-      if( !$notif->getFromDBByNotification( $data['notifications_id'] ) ){
-         $notif->fields['threshold'] = null ;
-         $notif->fields['force_positive_notif'] = null ;
+   function checkNotificationThreshold($data, $options) {
+      $config = PluginArsurveysConfig::getInstance();
+      $notif = new PluginArsurveysNotification;
+      if (!$notif->getFromDBByNotification( $data['notifications_id'] )) {
+         $notif->fields['threshold'] = null;
+         $notif->fields['force_positive_notif'] = null;
       }
-      switch( $this->raiseevent ) {
+      switch ($this->raiseevent) {
          case 'bad_survey' :
             $threshold = ($notif->fields['threshold']!=null ? $notif->fields['threshold'] : $config->fields['bad_threshold']);
-            if( (in_array('satisfaction', $options['item']->updates) || in_array( 'friendliness', $options['item']->updates ) || in_array( 'responsetime', $options['item']->updates ))
+            if ((in_array('satisfaction', $options['item']->updates) || in_array( 'friendliness', $options['item']->updates ) || in_array( 'responsetime', $options['item']->updates ))
                && ($options['item']->input['satisfaction'] <= $threshold
                   || (isset($options['item']->input['friendliness']) && $options['item']->input['friendliness'] <= $threshold)
                   || (isset($options['item']->input['responsetime']) && $options['item']->input['responsetime'] <= $threshold)
                   )
                ) {
-               return true ;
+               return true;
             }
             break;
          case 'good_survey' :
             $threshold = ($notif->fields['threshold']!=null ? $notif->fields['threshold'] : $config->fields['good_threshold']);
             $force_positive_notif=($notif->fields['force_positive_notif']!=null ? $notif->fields['force_positive_notif'] : $config->fields['force_positive_notif']);
-            if( (in_array('satisfaction', $options['item']->updates) ||
+            if ((in_array('satisfaction', $options['item']->updates) ||
                in_array('friendliness', $options['item']->updates) ||
                in_array('responsetime', $options['item']->updates) ||
                in_array('comment', $options['item']->updates)) &&
@@ -309,48 +319,13 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
                (!isset( $options['item']->input['responsetime'] ) || $options['item']->input['responsetime'] >= $threshold) &&
                ( $force_positive_notif || !empty($options['item']->input['comment']) )) {
 
-               return true ;
+               return true;
             }
             break;
       }
-      return false ;
+      return false;
    }
 
-   /**
-    * Summary of getAddressesByTarget
-    * @param mixed $data
-    * @param mixed $options
-    */
-   function getAddressesByTarget($data, $options = array()) {
-      //exec = true ;
-      $check = $this->checkNotificationTarget( $data, $options ) ;
-      if( ($data['type'] == self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP
-            || $data['type'] == self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP)
-          && $check ) {
-
-          if(  $this->checkNotificationThreshold( $data, $options) ) {
-              parent::getAddressesByTarget( $data, $options ) ;
-          }
-      }
-   }
-
-   /**
-    * Summary of getSpecificTargets
-    * @param mixed $data
-    * @param mixed $options
-    */
-   function getSpecificTargets($data, $options){
-      switch( $data['type'] ) {
-         case self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP :
-            $this->getLinkedUserByID($options['arsurvey']['users_id']);
-            break ;
-         case self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP:
-            $this->getAddressesByGroup(1, $data['items_id']);
-            break ;
-         default :
-            parent::getSpecificTargets($data, $options);
-      }
-   }
 
    /**
     * Summary of getLinkedUserByID
@@ -358,26 +333,41 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
     * @param mixed $ids array of users_id
     * @param mixed $type
     */
-   function getLinkedUserByID($ids, $type=false) {
+   function getLinkedUserByID($ids, $type = false) {
       global $DB, $CFG_GLPI;
-      if( !$type ) {
+      if (!$type) {
          $type = self::$ASSIGN;
       }
-      $userlinktable = getTableForItemType($this->obj->userlinkclass);
+      $dbu = new DbUtils();
+      $userlinktable = $dbu->getTableForItemType($this->obj->userlinkclass);
       $fkfield       = $this->obj->getForeignKeyField();
 
       //Look for the user by his id
-      $query =        $this->getDistinctUserSql().",
-                      `$userlinktable`.`use_notification` AS notif,
-                      `$userlinktable`.`alternative_email` AS altemail
-               FROM `$userlinktable`
-               LEFT JOIN `glpi_users` ON (`$userlinktable`.`users_id` = `glpi_users`.`id`)".
-               ($type!=self::$OBSERVER?$this->getProfileJoinSql():"")."
-               WHERE `$userlinktable`.`$fkfield` = '".$this->obj->fields["id"]."'
-                     AND `$userlinktable`.`type` = '$type'
-                     AND `$userlinktable`.`users_id` IN (".implode(', ', $ids).")";
+      //$query =        $this->getDistinctUserSql().",
+      //                `$userlinktable`.`use_notification` AS notif,
+      //                `$userlinktable`.`alternative_email` AS altemail
+      //         FROM `$userlinktable`
+      //         LEFT JOIN `glpi_users` ON (`$userlinktable`.`users_id` = `glpi_users`.`id`)".
+      //         ($type!=self::$OBSERVER?$this->getProfileJoinSql():"")."
+      //         WHERE `$userlinktable`.`$fkfield` = '".$this->obj->fields["id"]."'
+      //               AND `$userlinktable`.`type` = '$type'
+      //               AND `$userlinktable`.`users_id` IN (".implode(', ', $ids).")";
 
-      foreach ($DB->request($query) as $data) {
+      $query2 = $this->getDistinctUserCriteria();
+      if($type != self::$OBSERVER) {
+         $tab = $this->getProfileJoinCriteria();
+         foreach($tab as $key => $crit) {
+            $query2[$key] = $crit;
+         }
+      }
+      
+      array_push($query2['FIELDS'], $userlinktable.".use_notification AS notif", $userlinktable.".alternative_email AS altemail");
+      //$query2['FIELDS']  = [$userlinktable.".use_notification AS notif",$userlinktable.".alternative_email AS altemail"];
+      //$query2['FIELDS'][]  = $userlinktable.".alternative_email AS altemail";
+      $query2['FROM']      = $userlinktable;
+      $query2['LEFT JOIN'] = ['glpi_users' => ['FKEY' => ['glpi_users' => 'id', $userlinktable => 'users_id']]];
+      $query2['WHERE']     = ['AND' => [$userlinktable.".".$fkfield => $this->obj->fields['id'], $userlinktable.".type" => $type, $userlinktable.".users_id" => $ids]]; 
+      foreach ($DB->request($query2) as $data) {
          //Add the user email and language in the notified users list
          if ($data['notif']) {
             $author_email = UserEmail::getDefaultForUser($data['users_id']);
@@ -386,7 +376,7 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
 
             if (!empty($data['altemail'])
                 && $data['altemail'] != $author_email
-                && NotificationMail::isUserAddressValid($data['altemail'])) {
+                && NotificationMailing::isUserAddressValid($data['altemail'])) {
                $author_email = $data['altemail'];
             }
             if (empty($author_lang)) {
@@ -395,63 +385,93 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
             if (empty($author_id)) {
                $author_id = -1;
             }
-            $this->addToAddressesList(array('email'    => $author_email,
-                                            'language' => $author_lang,
-                                            'users_id' => $author_id,
-                                            'type'     => $type )); // $type is passed only to authorize view of tickets by watchers (or observers)
+
+            $user = [
+               'language' => $author_lang,
+               'users_id' => $author_id,
+               'type'     => $type // $type is passed only to authorize view of tickets by watchers (or observers)
+            ];
+            if ($this->isMailMode()) {
+               $user['email'] = $author_email;
+            }
+            $this->addToRecipientsList($user);
          }
       }
    }
 
+
    /**
-    * Summary of addGroupsToTargets
-    * @param mixed $entity
+    * Allows to add more notification targets
+    * Can be overridden in some case (for example Ticket)
+    *
+    * @param string $event specif event to get additional targets (default '')
+    *
+    * @return void
     */
-   function addGroupsToTargets($entity) {
-      global $LANG, $DB;
+   function addAdditionalTargets($event = '') {
+       global $DB;
+       $entity = $this->entity;
+       $dbu = new DbUtils();
 
-      parent::addGroupsToTargets($entity) ;
+       $res = $DB->request([
+                     'SELECT' => ['id', 'name'],
+                     'FROM'   => 'glpi_groups',
+                     'WHERE'  => [
+                        'AND' => [
+                           $dbu->getEntitiesRestrictCriteria('glpi_groups', 'entities_id', $entity, true), 'is_usergroup' => 1, 'is_notify' => 1]],
+                     'ORDER'  => 'name'
+          ]);
+       // Filter groups which can be notified and have members (as notifications are sent to members)
+       //$query = "SELECT `id`, `name`
+       //         FROM `glpi_groups`".
+       //          $dbu->getEntitiesRestrictRequest(" WHERE", 'glpi_groups', 'entities_id', $entity, true)."
+       //               AND `is_usergroup`
+       //               AND `is_notify`
+       //         ORDER BY `name`";
 
-      // Filter groups which can be notified and have members (as notifications are sent to members)
-      $query = "SELECT `id`, `name`
-                FROM `glpi_groups`".
-                getEntitiesRestrictRequest(" WHERE", 'glpi_groups', 'entities_id', $entity, true)."
-                      AND `is_usergroup`
-                      AND `is_notify`
-                ORDER BY `name`";
-
-      foreach ($DB->request($query) as $data) {
-         //Add group
-         $this->addTarget($data["id"], $LANG['plugin_arsurveys']['targets']['tech_assigned_in_group']. " " .$data["name"], self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP);
-         $this->addTarget($data["id"], $LANG['plugin_arsurveys']['targets']['manager_tech_assigned_in_group']. " " .$data["name"], self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP);
+      foreach ($res as $data) {
+          //Add group
+         $this->addTarget($data["id"], __('Technician in charge of this ticket within Group', 'arsurveys'). " " .$data["name"], self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP);
+         $this->addTarget($data["id"], __('Manager of Group for Technician in charge of this ticket within Group', 'arsurveys'). " " .$data["name"], self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP);
       }
-
    }
+
 
    /**
     * Display notification targets
     *
-    * @param $notification the Notification object
+    * @param Notification $notification the Notification object
    **/
    function showNotificationTargets(Notification $notification) {
-      global $LANG, $DB;
+      global $DB;
 
       if ($notification->getField('itemtype') != '') {
          $notifications_id = $notification->fields['id'];
          $this->getNotificationTargets($_SESSION['glpiactive_entity']);
 
-         $canedit = $notification->can($notifications_id,'w');
+         $canedit = $notification->can($notifications_id, 'w');
 
          $options = "";
+         $query2 = [
+            'SELECT' => ['glpi_notificationtargets.items_id', 'glpi_notificationtargets.id'],
+            'FROM'   => 'glpi_notificationtargets',
+            'WHERE'  => [
+               'AND' => [
+                  'glpi_notificationtargets.notifications_id' => $notifications_id, 
+                  'glpi_notificationtargets.type' => Notification::USER_TYPE
+               ]
+            ],
+            'ORDER'  => 'glpi_notificationtargets.items_id'
+         ];
          // Get User mailing
-         $query = "SELECT `glpi_notificationtargets`.`items_id`,
-                          `glpi_notificationtargets`.`id`
-                   FROM `glpi_notificationtargets`
-                   WHERE `glpi_notificationtargets`.`notifications_id` = '$notifications_id'
-                         AND `glpi_notificationtargets`.`type` = '" . Notification::USER_TYPE . "'
-                   ORDER BY `glpi_notificationtargets`.`items_id`";
+         //$query = "SELECT `glpi_notificationtargets`.`items_id`,
+         //                 `glpi_notificationtargets`.`id`
+         //          FROM `glpi_notificationtargets`
+         //          WHERE `glpi_notificationtargets`.`notifications_id` = '$notifications_id'
+         //                AND `glpi_notificationtargets`.`type` = '" . Notification::USER_TYPE . "'
+         //          ORDER BY `glpi_notificationtargets`.`items_id`";
 
-         foreach ($DB->request($query) as $data) {
+         foreach ($DB->request($query2) as $data) {
             if (isset($this->notification_targets[Notification::USER_TYPE."_".$data["items_id"]])) {
                unset($this->notification_targets[Notification::USER_TYPE."_".$data["items_id"]]);
             }
@@ -466,6 +486,19 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
          }
 
          // Get Profile mailing
+
+         $query2['SELECT'][] = 'glpi_profiles.name AS prof';
+         $query2['LEFT JOIN'] = 	[
+            'glpi_profiles' => [
+               'FKEY' => [
+                  'glpi_notificationtargets' => 'items_id', 
+                  'glpi_profiles' => 'id'
+               ]
+            ]
+         ];
+         $query2['WHERE']['AND']['glpi_notificationtargets.type'] = Notification::PROFILE_TYPE;
+         $query2['ORDER'] = 'prof';
+
          $query = "SELECT `glpi_notificationtargets`.`items_id`,
                           `glpi_notificationtargets`.`id`,
                           `glpi_profiles`.`name` AS `prof`
@@ -476,8 +509,8 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
                          AND `glpi_notificationtargets`.`type` = '" . Notification::PROFILE_TYPE . "'
                    ORDER BY `prof`";
 
-         foreach ($DB->request($query) as $data) {
-            $options .= "<option value='" . $data["id"] . "'>" . $LANG['profiles'][22] . " " .
+         foreach ($DB->request($query2) as $data) {
+            $options .= "<option value='" . $data["id"] . "'>" . __("Profile") . " " .
                         $data["prof"] . "</option>";
 
             if (isset($this->notification_targets[Notification::PROFILE_TYPE."_".$data["items_id"]])) {
@@ -485,19 +518,32 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
             }
          }
 
-         // Get Group mailing
-         $query = "SELECT `glpi_notificationtargets`.`items_id`,
-                          `glpi_notificationtargets`.`id`,
-                          `glpi_groups`.`name` AS `name`
-                   FROM `glpi_notificationtargets`
-                   LEFT JOIN `glpi_groups`
-                        ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
-                   WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
-                         AND `glpi_notificationtargets`.`type` = '" . Notification::GROUP_TYPE . "'
-                   ORDER BY `name`;";
+         $query2['SELECT'][2] = 'glpi_groups.name AS name';
+         unset($query['LEFT JOIN']);
+         $query2['LEFT JOIN'] = 	[
+            'glpi_groups' => [
+               'FKEY' => [
+                  'glpi_notificationtargets' => 'items_id', 
+                  'glpi_groups' => 'id'
+               ]
+            ]
+         ];
+         $query2['WHERE']['AND']['glpi_notificationtargets.type'] = Notification::GROUP_TYPE;
+         $query2['ORDER'] = 'name';
 
-         foreach ($DB->request($query) as $data) {
-            $options .= "<option value='" . $data["id"] . "'>" . $LANG['common'][35] . " " .
+         // Get Group mailing
+         //$query = "SELECT `glpi_notificationtargets`.`items_id`,
+         //                 `glpi_notificationtargets`.`id`,
+         //                 `glpi_groups`.`name` AS `name`
+         //          FROM `glpi_notificationtargets`
+         //          LEFT JOIN `glpi_groups`
+         //               ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
+         //          WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
+         //                AND `glpi_notificationtargets`.`type` = '" . Notification::GROUP_TYPE . "'
+         //          ORDER BY `name`;";
+
+         foreach ($DB->request($query2) as $data) {
+            $options .= "<option value='" . $data["id"] . "'>" . __('Group'). " " .
                         $data["name"] . "</option>";
 
             if (isset($this->notification_targets[Notification::GROUP_TYPE."_".$data["items_id"]])) {
@@ -505,21 +551,23 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
             }
          }
 
+         $query2['WHERE']['AND']['glpi_notificationtargets.type'] = Notification::SUPERVISOR_GROUP_TYPE;
+         
          // Get Group mailing
-         $query = "SELECT `glpi_notificationtargets`.`items_id`,
-                          `glpi_notificationtargets`.`id`,
-                          `glpi_groups`.`name` AS `name`
-                   FROM `glpi_notificationtargets`
-                   LEFT JOIN `glpi_groups`
-                        ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
-                   WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
-                         AND `glpi_notificationtargets`.`type`
-                                                         = '".Notification::SUPERVISOR_GROUP_TYPE."'
-                   ORDER BY `name`;";
+         //$query = "SELECT `glpi_notificationtargets`.`items_id`,
+         //                 `glpi_notificationtargets`.`id`,
+         //                 `glpi_groups`.`name` AS `name`
+         //          FROM `glpi_notificationtargets`
+         //          LEFT JOIN `glpi_groups`
+         //               ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
+         //          WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
+         //                AND `glpi_notificationtargets`.`type`
+         //                                                = '".Notification::SUPERVISOR_GROUP_TYPE."'
+         //          ORDER BY `name`;";
 
-         foreach ($DB->request($query) as $data) {
-            $options .= "<option value='" . $data["id"] . "'>" . $LANG['common'][64].' '.
-                        $LANG['common'][35] . " " .$data["name"] . "</option>";
+         foreach ($DB->request($query2) as $data) {
+            $options .= "<option value='" . $data["id"] . "'>" . __("Manager").' '.
+                        __("Group") . " " .$data["name"] . "</option>";
 
             if (isset($this->notification_targets[Notification::SUPERVISOR_GROUP_TYPE."_".
                                                   $data["items_id"]])) {
@@ -529,20 +577,21 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
             }
          }
 
+         $query2['WHERE']['AND']['glpi_notificationtargets.type']= self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP;
          // Get Special ARSurvey Group mailing
-         $query = "SELECT `glpi_notificationtargets`.`items_id`,
-                          `glpi_notificationtargets`.`id`,
-                          `glpi_groups`.`name` AS `name`
-                   FROM `glpi_notificationtargets`
-                   LEFT JOIN `glpi_groups`
-                        ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
-                   WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
-                         AND `glpi_notificationtargets`.`type`
-                                                         = '".self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP."'
-                   ORDER BY `name`;";
+         //$query = "SELECT `glpi_notificationtargets`.`items_id`,
+         //                 `glpi_notificationtargets`.`id`,
+         //                 `glpi_groups`.`name` AS `name`
+         //          FROM `glpi_notificationtargets`
+         //          LEFT JOIN `glpi_groups`
+         //               ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
+         //          WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
+         //                AND `glpi_notificationtargets`.`type`
+         //                                                = '".self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP."'
+         //          ORDER BY `name`;";
 
-         foreach ($DB->request($query) as $data) {
-            $options .= "<option value='" . $data["id"] . "'>" . $LANG['plugin_arsurveys']['targets']['tech_assigned_in_group'] . " " .$data["name"] . "</option>";
+         foreach ($DB->request($query2) as $data) {
+            $options .= "<option value='" . $data["id"] . "'>" . __('Technician in charge of this ticket within Group', 'arsurveys') . " " .$data["name"] . "</option>";
 
             if (isset($this->notification_targets[self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP."_".
                                                   $data["items_id"]])) {
@@ -552,20 +601,22 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
             }
          }
 
-         // Get Special ARSurvey Group mailing for group managers
-         $query = "SELECT `glpi_notificationtargets`.`items_id`,
-                          `glpi_notificationtargets`.`id`,
-                          `glpi_groups`.`name` AS `name`
-                   FROM `glpi_notificationtargets`
-                   LEFT JOIN `glpi_groups`
-                        ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
-                   WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
-                         AND `glpi_notificationtargets`.`type`
-                                                         = '".self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP."'
-                   ORDER BY `name`;";
 
-         foreach ($DB->request($query) as $data) {
-            $options .= "<option value='" . $data["id"] . "'>" . $LANG['plugin_arsurveys']['targets']['manager_tech_assigned_in_group'] . " " .$data["name"] . "</option>";
+         $query2['WHERE']['AND']['glpi_notificationtargets.type'] = self::ARSURVEY_ITEM_TECH_IN_CHARGE_IN_GROUP;
+         // Get Special ARSurvey Group mailing for group managers
+         //$query = "SELECT `glpi_notificationtargets`.`items_id`,
+         //                 `glpi_notificationtargets`.`id`,
+         //                 `glpi_groups`.`name` AS `name`
+         //          FROM `glpi_notificationtargets`
+         //          LEFT JOIN `glpi_groups`
+         //               ON (`glpi_notificationtargets`.`items_id` = `glpi_groups`.`id`)
+         //          WHERE `glpi_notificationtargets`.`notifications_id`='$notifications_id'
+         //                AND `glpi_notificationtargets`.`type`
+         //                                                = '".self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP."'
+         //          ORDER BY `name`;";
+
+         foreach ($DB->request($query2) as $data) {
+            $options .= "<option value='" . $data["id"] . "'>" . __('Manager of Group for Technician in charge of this ticket within Group', 'arsurveys'). " " .$data["name"] . "</option>";
 
             if (isset($this->notification_targets[self::ARSURVEY_MANAGER_TECH_IN_CHARGE_IN_GROUP."_".
                                                   $data["items_id"]])) {
@@ -594,13 +645,13 @@ class PluginArsurveysNotificationTargetTicketSatisfaction extends NotificationTa
 
             if (count($this->notification_targets)) {
                echo "<input type='submit' class='submit' name='mailing_add' value='".
-               $LANG['buttons'][8]." >>'>";
+               __("Add")." >>'>";
             }
             echo "<br><br>";
 
             if (!empty($options)) {
                echo "<input type='submit' class='submit' name='mailing_delete' value='<< ".
-               $LANG['buttons'][6]."'>";
+               __("Delete")."'>";
             }
             echo "</td><td>";
 

@@ -36,13 +36,13 @@ along with GLPI. If not, see <http://www.gnu.org/licenses/>.
 
 define('GLPI_ROOT', '../../..');
 include (GLPI_ROOT . "/inc/includes.php");
-
+global $DB;
 // No autoload when plugin is not activated
 require_once('../inc/config.class.php');
 
 $config = new PluginArsurveysConfig();
 if (isset($_POST["update"])) {
-   if (TableExists('glpi_profilerights')) {
+   if ($DB->tableExists('glpi_profilerights')) {
       $config->check($_POST['id'], UPDATE);
    } else {
       $config->check($_POST['id'], 'w');
